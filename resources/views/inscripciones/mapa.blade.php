@@ -3,64 +3,88 @@
 @section('title', 'Inscripción al Evento')
 
 @section('content')
-    <h2>Selecciona tu ubicacasdión para inscribirte a: {{ $evento->nombre }}</h2>
+    <h2 class="text-2xl font-bold mb-4">
+        Selecciona tu ubicación para inscribirte a: {{ $evento->nombre }}
+    </h2>
 
     @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 text-red-700 rounded">
+            {{ session('error') }}
+        </div>
     @endif
 
-    {{-- Mostrar detalles del evento --}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h4>Detalles del Evento</h4>
-            <p><strong>Nombre:</strong> {{ $evento->nombre }}</p>
-            <p><strong>Fecha Inicio:</strong> {{ $evento->fecha_inicio }} - Hora: {{ $evento->hora_inicio }}</p>
-            <p><strong>Fecha Finalización:</strong> {{ $evento->fecha_finalizacion }} - Hora: {{ $evento->hora_finalizacion }}</p>
-            <p><strong>Estado:</strong> {{ $evento->estado }}</p>
-            <p><strong>Descripción:</strong> {{ $evento->descripcion }}</p>
-        </div>
+    <!-- Detalles del Evento -->
+    <div class="bg-white shadow rounded p-4 mb-4">
+        <h4 class="text-xl font-semibold mb-2">Detalles del Evento</h4>
+        <p class="mb-1"><strong>Nombre:</strong> {{ $evento->nombre }}</p>
+        <p class="mb-1"><strong>Fecha Inicio:</strong> {{ $evento->fecha_inicio }} - Hora: {{ $evento->hora_inicio }}</p>
+        <p class="mb-1"><strong>Fecha Finalización:</strong> {{ $evento->fecha_finalizacion }} - Hora: {{ $evento->hora_finalizacion }}</p>
+        <p class="mb-1"><strong>Estado:</strong> {{ $evento->estado }}</p>
+        <p class="mb-0"><strong>Descripción:</strong> {{ $evento->descripcion }}</p>
     </div>
 
-    {{-- Contenedor del mapa --}}
-    <div id="map" style="width: 100%; height: 500px;" class="mb-3"></div>
+    <!-- Mapa -->
+    <div id="map" class="w-full h-96 mb-4"></div>
 
-    {{-- Formulario para enviar lat y lng, y la foto de referencia --}}
-    <form action="{{ route('inscripciones.storeUbicacion', $evento->id) }}" 
-          method="POST" 
-          enctype="multipart/form-data" 
-          class="mt-3">
+    <!-- Formulario para enviar lat y lng -->
+    <form
+        action="{{ route('inscripciones.storeUbicacion', $evento->id) }}"
+        method="POST"
+        enctype="multipart/form-data"
+        class="bg-white shadow rounded p-4"
+    >
         @csrf
 
-        {{-- Campos ocultos para lat y lng --}}
+        <!-- Campos ocultos para lat y lng -->
         <input type="hidden" name="lat" id="lat">
         <input type="hidden" name="lng" id="lng">
 
-        {{-- Campo opcional para subir la foto de referencia --}}
-        <div class="mb-3">
-            <label for="foto_referencia" class="form-label">Foto de Referencia (opcional)</label>
-            <input type="file" name="foto_referencia" id="foto_referencia" class="form-control" accept="image/*">
+        <!-- Foto de referencia (opcional) -->
+        <div class="mb-4">
+            <label for="foto_referencia" class="block mb-1 font-semibold text-sm text-secondary">
+                Foto de Referencia (opcional)
+            </label>
+            <input
+                type="file"
+                name="foto_referencia"
+                id="foto_referencia"
+                accept="image/*"
+                class="block w-full text-sm text-gray-500
+                       file:mr-4 file:py-2 file:px-4
+                       file:rounded file:border-0
+                       file:text-sm file:font-semibold
+                       file:bg-primary file:text-white
+                       hover:file:bg-secondary"
+            />
         </div>
 
-        {{-- Botón para usar la ubicación real --}}
-        <button type="button" id="btn-ubicacion-real" class="btn btn-primary mb-3">
+        <!-- Botón ubicación real -->
+        <button
+            type="button"
+            id="btn-ubicacion-real"
+            class="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition mb-4"
+        >
             Usar mi ubicación real
         </button>
 
-        {{-- Botón para confirmar la ubicación --}}
-        <button type="submit" class="btn btn-success">
+        <!-- Botón confirmar ubicación -->
+        <button
+            type="submit"
+            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+        >
             Confirmar Ubicación
         </button>
     </form>
 
     <!-- Hoja de estilos de Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <!-- Script principal de Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Obtener todas las coordenadas del evento desde la columna 'ubicacion'
-        const ubicacionEvento = "{{ $evento->ubicacion }}"; // Ejemplo: "-16.2902,-63.5887;-16.3000,-63.6000"
+        // Obtenemos la columna 'ubicacion' del evento, ejemplo: "-16.2902,-63.5887;-16.3000,-63.6000"
+        const ubicacionEvento = "{{ $evento->ubicacion }}";
         const coordenadasEvento = ubicacionEvento.split(';').filter(c => c.trim() !== '');
 
         let coordenadasValidas = [];
@@ -79,12 +103,11 @@
             }
         }
 
-        // Validar coordenadas
         if (coordenadasValidas.length === 0) {
             alert("El evento no tiene ubicaciones válidas.");
-            document.querySelector('form').style.display = 'none'; // Ocultar formulario si no hay coordenadas válidas
+            document.querySelector('form').style.display = 'none';
         } else {
-            // Inicializar mapa solo si las coordenadas son válidas
+            // Inicializar mapa
             const map = L.map('map').setView([eventoLat, eventoLng], 14);
 
             // Capa base (OpenStreetMap)
@@ -92,7 +115,7 @@
                 maxZoom: 19,
             }).addTo(map);
 
-            // Icono personalizado para el evento
+            // Icono personalizado
             const eventIcon = L.icon({
                 iconUrl: '{{ asset("images/evento.jpeg") }}',
                 iconSize: [32, 32],
@@ -100,23 +123,23 @@
                 popupAnchor: [0, -32]
             });
 
-            // Agregar todos los marcadores del evento
+            // Agregar marcadores del evento
             coordenadasValidas.forEach((coord, index) => {
                 L.marker([coord.lat, coord.lng], { icon: eventIcon })
                     .bindPopup(`Punto ${index + 1}: {{ $evento->nombre }}`)
                     .addTo(map);
             });
 
-            // Variables y funciones
+            // Marcador de usuario
             let userMarker = null;
             const updateHiddenFields = (lat, lng) => {
                 document.getElementById('lat').value = lat;
                 document.getElementById('lng').value = lng;
             };
 
-            // Evento click en el mapa (selección manual)
+            // Selección manual en el mapa
             map.on('click', function(e) {
-                const lat = e.latlng.lat.toFixed(6); // Precisión de 6 decimales
+                const lat = e.latlng.lat.toFixed(6);
                 const lng = e.latlng.lng.toFixed(6);
 
                 if (userMarker) map.removeLayer(userMarker);
@@ -124,7 +147,7 @@
                 updateHiddenFields(lat, lng);
             });
 
-            // Botón de geolocalización
+            // Botón geolocalización
             document.getElementById('btn-ubicacion-real').addEventListener('click', () => {
                 if (!navigator.geolocation) {
                     alert("Tu navegador no soporta geolocalización.");
@@ -138,7 +161,7 @@
 
                         if (userMarker) map.removeLayer(userMarker);
                         userMarker = L.marker([lat, lng]).addTo(map);
-                        map.setView([lat, lng], 16); // Zoom más cercano
+                        map.setView([lat, lng], 16);
                         updateHiddenFields(lat, lng);
                     },
                     (error) => {
@@ -148,7 +171,7 @@
                 );
             });
 
-            // Inicializar campos ocultos vacíos (no 0,0)
+            // Inicializar campos ocultos
             updateHiddenFields('', '');
         }
     </script>

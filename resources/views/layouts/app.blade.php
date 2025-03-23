@@ -4,44 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>@yield('title', 'Mi Aplicación')</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    {{-- Sección para estilos adicionales --}}
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @yield('styles')
 </head>
-<body>
+<body class="bg-background text-dark min-h-screen flex flex-col">
 
-    {{-- Header --}}
-    <header class="bg-primary text-white p-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h1>Mi Aplicación</h1>
-            {{-- Menú de navegación --}}
+    <!-- Header -->
+    <header class="bg-primary text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Botón de inicio en el nombre de la aplicación -->
+            <a href="{{ route('home') }}" class="text-xl font-bold hover:underline">
+                Mi Aplicación
+            </a>
+
+            <!-- Menú de navegación -->
             <nav>
-                <ul class="nav">
+                <ul class="flex space-x-4">
                     @if (Auth::guard('externo')->check())
-                        {{-- Usuario Externo --}}
-                        <li class="nav-item"><a class="nav-link text-white" href="{{ route('inscripciones.index') }}">Eventos</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="{{ route('pedidos.index') }}">Mis Pedidos</a></li>
+                        <li>
+                            <a href="{{ route('inscripciones.index') }}" class="hover:underline">
+                                Eventos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('pedidos.index') }}" class="hover:underline">
+                                Mis Pedidos
+                            </a>
+                        </li>
                     @endif
 
                     @if (Auth::guard('empleado')->check())
-                        {{-- Empleado (Admin/Superadmin) --}}
-                        <li class="nav-item"><a class="nav-link text-white" href="{{ route('pedidos.index') }}">Gestionar Pedidos</a></li>
+                        <li>
+                            <a href="{{ route('pedidos.index') }}" class="hover:underline">
+                                Gestionar Pedidos
+                            </a>
+                        </li>
                     @endif
 
                     @if (Auth::guard('empleado')->check() && Auth::user()->rol == 'superadmin')
-                        {{-- Solo Superadmin --}}
-                        <li class="nav-item"><a class="nav-link text-white" href="{{ route('eventos.create') }}">Crear Evento</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="{{ route('catalogos.index') }}">Administrar Catálogos</a></li>
+                        <li>
+                            <a href="{{ route('eventos.create') }}" class="hover:underline">
+                                Crear Evento
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('catalogos.index') }}" class="hover:underline">
+                                Administrar Catálogos
+                            </a>
+                        </li>
                     @endif
 
-                    {{-- Botón de Cerrar Sesión --}}
-                    <li class="nav-item">
+                    <!-- Botón de Cerrar Sesión -->
+                    <li>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="btn btn-danger btn-sm">Cerrar Sesión</button>
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded">
+                                Cerrar Sesión
+                            </button>
                         </form>
                     </li>
                 </ul>
@@ -49,18 +70,17 @@
         </div>
     </header>
 
-    {{-- Contenedor principal --}}
-    <div class="container mt-5">
+    <!-- Contenedor principal -->
+    <main class="container mx-auto flex-1 mt-8">
         @yield('content')
-    </div>
+    </main>
 
-    {{-- Footer --}}
-    <footer class="bg-light text-center p-3 mt-5">
-        <div class="container">
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center p-4 mt-8">
+        <div class="container mx-auto">
             <p>&copy; {{ date('Y') }} Mi Aplicación. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
