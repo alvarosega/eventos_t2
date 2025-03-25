@@ -7,6 +7,8 @@ use App\Models\Externo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+
 
 class InscripcionController extends Controller
 {
@@ -132,4 +134,63 @@ class InscripcionController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $radioTierra * $c;
     }
+
+    public function cancelarForm($id)
+    {
+        $usuario = Auth::user();
+
+        // Verificar si el usuario está inscrito en el evento (columna evento_id en 'externos')
+        if ($usuario->evento_id != $id) {
+            return redirect()->back()->with('error', 'No se encontró tu inscripción a este evento.');
+        }
+
+        // Obtener el evento para mostrar datos en la vista
+        $evento = Evento::findOrFail($id);
+
+        return view('inscripciones.cancelar', compact('evento'));
+    }
+
+    /**
+     * Procesar la cancelación de la inscripción.
+     */
+    public function cancelar(Request $request, $id)
+    {
+        $usuario = Auth::user();
+    
+        // Obtener los datos del usuario externo desde la tabla "externos"
+        $externo = DB::table('externos')->where('id', $usuario->id)->first();
+    
+        if (!$externo || !$externo->evento_id) {
+            return redirect()->back()->with('error', 'No tienes un evento registrado.');
+        }
+    
+        // Validar el motivo de cancelación
+        $request->validate([
+            'motivo'       => 'required|string|max:255',
+            'motivo_extra' => 'nullable|string|max:500',
+        ]);
+    
+        // Construir el motivo final
+        $motivoFinal = $request->motivo;
+        if (!empty($request->motivo_extra)) {
+            $motivoFinal .= ' - ' . $request->motivo_extra;
+        }
+    
+        // Insertar la cancelación en "inscripciones_canceladas"
+        DB::table('inscripciones_canceladas')->insert([
+            'inscripcion_id'  => $externo->id, // Relacionado con 'externos.id'
+            'nombre'          => $externo->nombre, // Guardamos el nombre del usuario
+            'numero_telefono' => $externo->numero_telefono, // Guardamos su número de teléfono
+            'motivo'          => $motivoFinal,
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+    
+        // Eliminar la inscripción en la tabla "externos" poniendo evento_id en NULL
+        DB::table('externos')->where('id', $externo->id)->update(['evento_id' => null]);
+    
+        return redirect()->route('home')->with('success', 'Tu inscripción ha sido cancelada exitosamente.');
+    }
+    
+    
 }

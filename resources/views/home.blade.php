@@ -23,28 +23,6 @@
         <small class="text-secondary text-base font-normal">({{ $usuario->rol }})</small>
     </h2>
 
-    {{-- Tarjeta de Información del Usuario --}}
-    <div class="bg-white shadow rounded mb-6 overflow-hidden">
-        <div class="bg-primary text-white p-4">
-            <h3 class="text-xl font-semibold">Información del Usuario</h3>
-        </div>
-        <div class="p-4 text-dark">
-            @if ($usuario->rol == 'externo')
-                <p class="mb-1"><strong>Nombre:</strong> {{ $usuario->nombre }}</p>
-                <p class="mb-1"><strong>Teléfono:</strong> {{ $usuario->numero_telefono }}</p>
-            @else
-                <p class="mb-1"><strong>Nombre:</strong> {{ $usuario->nombre_completo }}</p>
-                <p class="mb-1"><strong>Legajo/Identificación:</strong> {{ $usuario->legajo }}</p>
-            @endif
-            <p>
-                <strong>Rol:</strong>
-                <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-secondary text-white">
-                    {{ $usuario->rol }}
-                </span>
-            </p>
-        </div>
-    </div>
-
     {{-- Contenido Específico por Rol --}}
     @if($usuario->rol == 'externo')
         {{-- Sección para Usuarios Externos --}}
@@ -216,14 +194,5 @@
         </div>
     @endif
 
-    {{-- Botón de Cierre de Sesión Extra (si lo deseas fuera del header) --}}
-    <div class="text-center mt-6">
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit"
-                    class="inline-block bg-red-600 text-white text-sm px-4 py-2 rounded hover:bg-red-700 transition">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
-        </form>
-    </div>
+
 @endsection

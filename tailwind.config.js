@@ -27,7 +27,7 @@ export default {
         darkCard: '#1E293B',
 
         // Tonos de marca (puedes cambiarlos)
-        primary: '#4F46E5',    // Indigo 600
+        primary: '#2F3645',    // Indigo 600
         secondary: '#64748B',  // Slate 500
         success: '#16a34a',
         danger: '#dc2626',

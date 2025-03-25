@@ -7,10 +7,11 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-background text-dark min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat text-dark"
+      style="background-image: url('/images/fondo-login.jpg');">
 
-    <div class="w-full max-w-md">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+<div class="bg-white/90 shadow-2xl rounded-2xl overflow-hidden border border-gray-300 transform transition hover:scale-[1.015] duration-300">
+      <div class="bg-white shadow-lg rounded-lg overflow-hidden">
             <!-- Encabezado -->
             <div class="bg-primary p-6">
                 <h2 class="text-2xl font-bold text-white text-center">Iniciar Sesión</h2>
@@ -42,8 +43,9 @@
                             id="identificador"
                             name="identificador"
                             required
-                            class="mt-1 block w-full px-3 py-2 border border-secondary rounded-md shadow-sm
-                                   focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary"
+                            class="mt-1 block w-full px-3 py-2 border border-secondary rounded-md shadow-md 
+       focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+
                         />
                     </div>
 
@@ -56,15 +58,17 @@
                             id="password"
                             name="password"
                             required
-                            class="mt-1 block w-full px-3 py-2 border border-secondary rounded-md shadow-sm
-                                   focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary"
+                            class="mt-1 block w-full px-3 py-2 border border-secondary rounded-md shadow-md 
+       focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+
                         />
                     </div>
 
                     <button
                         type="submit"
-                        class="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-secondary transition
-                               focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-1"
+                        class="w-full bg-primary text-white py-2 px-4 rounded-md shadow-lg hover:scale-[1.02]
+       transition transform hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-1"
+
                     >
                         Iniciar Sesión
                     </button>

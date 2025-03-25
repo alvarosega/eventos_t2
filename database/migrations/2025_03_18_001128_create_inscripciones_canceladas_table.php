@@ -10,12 +10,16 @@ return new class extends Migration
     {
         Schema::create('inscripciones_canceladas', function (Blueprint $table) {
             $table->id();
-            // Relación con la inscripción
+            // Relación con la tabla 'externos' en lugar de 'inscripciones'
             $table->foreignId('inscripcion_id')
-                  ->constrained('inscripciones')
+                  ->constrained('externos') 
                   ->onDelete('cascade');
-            // Texto libre (o enum/JSON si lo deseas)
-            $table->text('motivo')->nullable(); 
+
+            // Nuevas columnas para almacenar datos del usuario externo
+            $table->string('nombre'); // Guardará el nombre del usuario externo
+            $table->string('numero_telefono'); // Guardará el número de teléfono
+            
+            $table->text('motivo')->nullable();
             $table->timestamps();
         });
     }

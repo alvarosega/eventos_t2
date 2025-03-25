@@ -1,14 +1,38 @@
 @extends('layouts.app')
 
-@section('content')
-    <h1>Cancelar Inscripción</h1>
+@section('title', 'Cancelar Inscripción')
 
-    <form action="{{ route('inscripciones.cancel', $inscripcionId) }}" method="POST">
-        @csrf
-        <div class="mb-3">
-            <label for="motivo" class="form-label">Motivo de la cancelación</label>
-            <textarea name="motivo" id="motivo" rows="3" class="form-control"></textarea>
-        </div>
-        <button type="submit" class="btn btn-danger">Confirmar Cancelación</button>
-    </form>
+@section('content')
+    <div class="container max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">Cancelar Inscripción</h2>
+        
+        <p class="mb-4">Selecciona un motivo para cancelar tu inscripción al evento: <strong>{{ $evento->nombre }}</strong></p>
+
+        @if(session('error'))
+            <div class="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('inscripciones.cancel', $evento->id) }}">
+            @csrf
+            <label for="motivo" class="block mb-2 text-sm font-medium">Motivo de cancelación</label>
+            <select name="motivo" id="motivo" required
+                class="w-full p-2 border border-gray-300 rounded focus:ring-primary focus:border-primary">
+                <option value="">Selecciona un motivo...</option>
+                <option value="Cambio de planes">Cambio de planes</option>
+                <option value="Problemas personales">Problemas personales</option>
+                <option value="No puedo asistir">No puedo asistir</option>
+                <option value="Otro">Otro (especificar abajo)</option>
+            </select>
+
+            <textarea name="motivo_extra" id="motivo_extra" rows="3" placeholder="Especifica tu motivo (opcional)"
+                class="w-full mt-3 p-2 border border-gray-300 rounded"></textarea>
+
+            <button type="submit"
+                class="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition">
+                Confirmar Cancelación
+            </button>
+        </form>
+    </div>
 @endsection

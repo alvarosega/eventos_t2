@@ -77,24 +77,25 @@ Route::middleware(['auth:externo,empleado,web'])->group(function () {
    RUTAS PARA INSCRIPCIONES
    EXCLUSIVO PARA EXTERNOS
    ========================= */
-Route::middleware(['auth:externo'])->group(function() {
+   Route::middleware(['auth:externo'])->group(function() {
     // Listar eventos disponibles
     Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
 
-    // Inscribirse
+    // Inscribirse en un evento
     Route::post('/inscripciones/{eventoId}', [InscripcionController::class, 'store'])->name('inscripciones.store');
 
-    // Form y acción de cancelar (encuesta)
+    // Formulario para cancelar inscripción
     Route::get('/inscripciones/cancelar/{id}', [InscripcionController::class, 'cancelarForm'])->name('inscripciones.cancelForm');
     Route::post('/inscripciones/cancelar/{id}', [InscripcionController::class, 'cancelar'])->name('inscripciones.cancel');
 
-    // Ver mis inscripciones
+
+    // Ver mis inscripciones activas
     Route::get('/mis-inscripciones', [InscripcionController::class, 'misInscripciones'])->name('misInscripciones');
 
-    // Mapa para seleccionar ubicación
+    // Mostrar mapa para seleccionar ubicación al inscribirse
     Route::get('/inscripciones/mapa/{eventoId}', [InscripcionController::class, 'showMapa'])->name('inscripciones.showMapa');
 
-    // Guardar ubicación y asignar el evento al usuario
+    // Guardar la ubicación y asignar el evento al usuario
     Route::post('/inscripciones/mapa/{eventoId}', [InscripcionController::class, 'storeUbicacion'])->name('inscripciones.storeUbicacion');
 });
 
