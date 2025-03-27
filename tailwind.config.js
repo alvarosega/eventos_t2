@@ -1,13 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  // Escaneo de todos tus Blade y archivos front
+  // Escanea todas las plantillas Blade, JS y Vue
   content: [
     './resources/**/*.blade.php',
     './resources/**/*.js',
     './resources/**/*.vue',
   ],
 
-  // Activar modo oscuro por clase
+  // Activa el modo oscuro por clase
   darkMode: 'class',
 
   theme: {
@@ -26,9 +26,9 @@ export default {
         darkText: '#F1F5F9',
         darkCard: '#1E293B',
 
-        // Tonos de marca (puedes cambiarlos)
-        primary: '#2F3645',    // Indigo 600
-        secondary: '#64748B',  // Slate 500
+        // Tonos de marca (puedes cambiarlos a tu gusto)
+        primary: '#2F3645',
+        secondary: '#64748B',
         success: '#16a34a',
         danger: '#dc2626',
         warning: '#f59e0b',

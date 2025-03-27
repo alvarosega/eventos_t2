@@ -8,90 +8,110 @@
 @section('title', 'Crear Evento')
 
 @section('content')
-    <h2 class="text-2xl font-bold mb-4">Crear Evento</h2>
+    <h2 class="text-2xl font-bold mb-4 flex items-center">
+        <i class="fas fa-calendar-plus text-primary mr-2"></i>
+        Crear Evento
+    </h2>
 
-    <form action="{{ route('eventos.store') }}" method="POST" class="bg-white p-4 rounded shadow max-w-2xl">
+    <form 
+        action="{{ route('eventos.store') }}" 
+        method="POST" 
+        class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 p-4 rounded shadow-lg 
+               hover:shadow-2xl transform hover:scale-105 transition-all duration-300 max-w-2xl"
+    >
         @csrf
 
         <!-- Nombre del Evento -->
         <div class="mb-4">
-            <label for="nombre" class="block mb-1 font-semibold text-sm text-secondary">
-                Nombre del Evento
+            <label for="nombre" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                <i class="fas fa-signature mr-1"></i> Nombre del Evento
             </label>
             <input
                 type="text"
                 id="nombre"
                 name="nombre"
                 required
-                class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                       rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                       dark:bg-gray-700 dark:text-gray-100"
             />
         </div>
 
         <!-- Fechas y horas -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-                <label for="fecha_inicio" class="block mb-1 font-semibold text-sm text-secondary">
-                    Fecha de Inicio
+                <label for="fecha_inicio" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                    <i class="fas fa-calendar-day mr-1"></i> Fecha de Inicio
                 </label>
                 <input
                     type="date"
                     id="fecha_inicio"
                     name="fecha_inicio"
                     required
-                    class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                           rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                           dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
             <div>
-                <label for="hora_inicio" class="block mb-1 font-semibold text-sm text-secondary">
-                    Hora de Inicio
+                <label for="hora_inicio" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                    <i class="fas fa-clock mr-1"></i> Hora de Inicio
                 </label>
                 <input
                     type="time"
                     id="hora_inicio"
                     name="hora_inicio"
                     required
-                    class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                           rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                           dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-                <label for="fecha_finalizacion" class="block mb-1 font-semibold text-sm text-secondary">
-                    Fecha de Finalización
+                <label for="fecha_finalizacion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                    <i class="fas fa-calendar-day mr-1"></i> Fecha de Finalización
                 </label>
                 <input
                     type="date"
                     id="fecha_finalizacion"
                     name="fecha_finalizacion"
                     required
-                    class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                           rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                           dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
             <div>
-                <label for="hora_finalizacion" class="block mb-1 font-semibold text-sm text-secondary">
-                    Hora de Finalización
+                <label for="hora_finalizacion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                    <i class="fas fa-clock mr-1"></i> Hora de Finalización
                 </label>
                 <input
                     type="time"
                     id="hora_finalizacion"
                     name="hora_finalizacion"
                     required
-                    class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                    class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                           rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                           dark:bg-gray-700 dark:text-gray-100"
                 />
             </div>
         </div>
 
         <!-- Estado -->
         <div class="mb-4">
-            <label for="estado" class="block mb-1 font-semibold text-sm text-secondary">
-                Estado
+            <label for="estado" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                <i class="fas fa-info-circle mr-1"></i> Estado
             </label>
             <select
                 id="estado"
                 name="estado"
                 required
-                class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                       rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                       dark:bg-gray-700 dark:text-gray-100"
             >
                 <option value="en espera" selected>En Espera</option>
                 <option value="activo">Activo</option>
@@ -101,27 +121,31 @@
 
         <!-- Descripción -->
         <div class="mb-4">
-            <label for="descripcion" class="block mb-1 font-semibold text-sm text-secondary">
-                Descripción
+            <label for="descripcion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                <i class="fas fa-align-left mr-1"></i> Descripción
             </label>
             <textarea
                 id="descripcion"
                 name="descripcion"
                 rows="3"
-                class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                       rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                       dark:bg-gray-700 dark:text-gray-100"
             ></textarea>
         </div>
 
         <!-- Selector cantidad de ubicaciones -->
         <div class="mb-4">
-            <label for="cantidad_ubicaciones" class="block mb-1 font-semibold text-sm text-secondary">
-                Cantidad de Ubicaciones
+            <label for="cantidad_ubicaciones" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                <i class="fas fa-map-marked-alt mr-1"></i> Cantidad de Ubicaciones
             </label>
             <select
                 id="cantidad_ubicaciones"
                 name="cantidad_ubicaciones"
                 required
-                class="w-full px-3 py-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                class="w-full px-3 py-2 border border-secondary dark:border-gray-600 
+                       rounded focus:outline-none focus:ring-2 focus:ring-primary 
+                       dark:bg-gray-700 dark:text-gray-100"
             >
                 @for($i = 1; $i <= 10; $i++)
                     <option value="{{ $i }}">{{ $i }}</option>
@@ -135,20 +159,22 @@
         <!-- Botón para usar ubicación actual -->
         <button
             type="button"
-            class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition mb-4"
+            class="inline-block bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition mb-4"
             onclick="obtenerUbicacion()"
         >
+            <i class="fas fa-location-arrow mr-1"></i>
             Usar mi ubicación actual
         </button>
 
         <!-- Mapa -->
-        <div id="mapa" class="w-full h-96 mb-4"></div>
+        <div id="mapa" class="w-full h-96 mb-4 border border-gray-300 dark:border-gray-600 rounded overflow-hidden"></div>
 
         <!-- Botón Crear Evento -->
         <button
             type="submit"
-            class="bg-primary text-white px-4 py-2 rounded hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="bg-primary text-white px-4 py-2 rounded shadow hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary transition"
         >
+            <i class="fas fa-check mr-1"></i>
             Crear Evento
         </button>
     </form>

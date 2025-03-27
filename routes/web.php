@@ -38,10 +38,15 @@ Route::post('/registro-externo', [RegistroExternoController::class, 'register'])
    RUTAS PARA EVENTOS
    ========================= */
 
-// Solo superadmin puede crear eventos
+// Solo superadmin puede crear eventos (TIPO 1 - Original)
 Route::middleware(['auth:externo,empleado,web'])->group(function () {
     Route::get('/eventos/create', [EventoController::class, 'create'])->name('eventos.create');
     Route::post('/eventos/store', [EventoController::class, 'store'])->name('eventos.store');
+    
+    // Nuevas rutas para EventoTipo2 (solo superadmin)
+    Route::get('/eventos/select-type', [EventoController::class, 'selectType'])->name('eventos.select-type');
+    Route::get('/eventos/create-tipo2', [EventoController::class, 'createTipo2'])->name('eventos.create-tipo2');
+    Route::post('/eventos/store-tipo2', [EventoController::class, 'storeTipo2'])->name('eventos.store-tipo2');
 });
 
 // Empleados (admin y superadmin) pueden editar/actualizar/eliminar eventos
@@ -49,8 +54,12 @@ Route::middleware(['auth:empleado'])->group(function () {
     Route::get('/eventos/{id}/edit', [EventoController::class, 'edit'])->name('eventos.edit');
     Route::put('/eventos/{id}', [EventoController::class, 'update'])->name('eventos.update');
     Route::delete('/eventos/{id}', [EventoController::class, 'destroy'])->name('eventos.destroy');
+    
+    // Rutas para editar/eliminar EventoTipo2
+    Route::get('/eventos-tipo2/{id}/edit', [EventoController::class, 'editTipo2'])->name('eventos.edit-tipo2');
+    Route::put('/eventos-tipo2/{id}', [EventoController::class, 'updateTipo2'])->name('eventos.update-tipo2');
+    Route::delete('/eventos-tipo2/{id}', [EventoController::class, 'destroyTipo2'])->name('eventos.destroy-tipo2');
 });
-
 /* =========================
    RUTAS PARA CATÁLOGOS
    ========================= */
@@ -77,7 +86,7 @@ Route::middleware(['auth:externo,empleado,web'])->group(function () {
    RUTAS PARA INSCRIPCIONES
    EXCLUSIVO PARA EXTERNOS
    ========================= */
-   Route::middleware(['auth:externo'])->group(function() {
+Route::middleware(['auth:externo'])->group(function() {
     // Listar eventos disponibles
     Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
 
@@ -87,7 +96,6 @@ Route::middleware(['auth:externo,empleado,web'])->group(function () {
     // Formulario para cancelar inscripción
     Route::get('/inscripciones/cancelar/{id}', [InscripcionController::class, 'cancelarForm'])->name('inscripciones.cancelForm');
     Route::post('/inscripciones/cancelar/{id}', [InscripcionController::class, 'cancelar'])->name('inscripciones.cancel');
-
 
     // Ver mis inscripciones activas
     Route::get('/mis-inscripciones', [InscripcionController::class, 'misInscripciones'])->name('misInscripciones');
@@ -105,9 +113,6 @@ Route::middleware(['auth:externo,empleado,web'])->group(function () {
 
 // Todos los usuarios logueados (externo, admin, superadmin) pueden acceder a la index de pedidos
 Route::middleware(['auth:externo,empleado,web'])->group(function() {
-    // Muestra pedidos según el rol:
-    // - admin/superadmin: todos
-    // - externo: solo sus pedidos
     Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
 });
 
@@ -138,4 +143,4 @@ Route::middleware(['auth:empleado'])->group(function () {
 Route::middleware(['auth:empleado'])->group(function () {
     Route::put('/pedidos/{pedido}/status', [PedidoController::class, 'updateStatus'])->name('pedidos.updateStatus');
     Route::put('/pedidos/{pedido}/evidence', [PedidoController::class, 'updateEvidence'])->name('pedidos.updateEvidence');
-});
+});  

@@ -16,30 +16,46 @@ class PedidoController extends Controller
      * - Si es admin/superadmin: muestra todos.
      * - Si es externo: solo los suyos.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Verificamos si el usuario es empleado (admin/superadmin)
+        // Si el usuario es empleado (admin/superadmin), mostrar todos los pedidos
         $empleado = Auth::guard('empleado')->user();
         if ($empleado && in_array($empleado->rol, ['admin', 'superadmin'])) {
-            // Mostrar todos los pedidos
-            $pedidos = Pedido::with('externo', 'evento')->orderBy('id', 'desc')->get();
+            $pedidos = Pedido::with('externo', 'evento')
+                             ->when($request->estado, function ($query, $estado) {
+                                 return $query->where('estado', $estado);
+                             })
+                             ->orderBy('id', 'desc')
+                             ->get();
+    
             return view('pedidos.index', compact('pedidos'));
         }
-
-        // Si no es empleado, probamos si es un usuario externo
+    
+        // Si el usuario es externo, solo mostrar pedidos del evento al que está inscrito
         $externo = Auth::guard('externo')->user();
         if ($externo) {
-            // Mostrar solo los pedidos de este usuario
+            // Verificar si el usuario tiene un evento asignado en "externos.evento_id"
+            if (!$externo->evento_id) {
+                return redirect()->route('home')
+                                 ->withErrors(['error' => 'No estás inscrito en ningún evento.']);
+            }
+    
+            // Filtrar pedidos donde "evento_id" coincida con el evento al que está inscrito el usuario externo
             $pedidos = Pedido::with('evento')
-                ->where('externo_id', $externo->id)
-                ->orderBy('id', 'desc')
-                ->get();
+                             ->where('evento_id', $externo->evento_id)
+                             ->when($request->estado, function ($query, $estado) {
+                                 return $query->where('estado', $estado);
+                             })
+                             ->orderBy('id', 'desc')
+                             ->get();
+    
             return view('pedidos.index', compact('pedidos'));
         }
-
-        // Si no se cumple nada, redirigimos
+    
+        // Si no es empleado ni externo, redirigir al login
         return redirect()->route('login')->withErrors(['error' => 'No tienes permiso para ver los pedidos.']);
     }
+    
 
     /**
      * Mostrar formulario para crear un pedido (catálogo del evento).
@@ -48,14 +64,26 @@ class PedidoController extends Controller
     {
         $externo = Auth::guard('externo')->user();
         if (!$externo) {
-            return redirect()->route('login')->withErrors(['error' => 'Debes iniciar sesión como usuario externo.']);
+            return redirect()->route('login')
+                             ->withErrors(['error' => 'Debes iniciar sesión como usuario externo.']);
         }
-
-        // Obtenemos los productos de ese evento
-        $productos = ProductoEvento::where('evento_id', $eventoId)->get();
-
+    
+        // Buscar productos del evento con stock > 0
+        $productos = ProductoEvento::where('evento_id', $eventoId)
+            ->where('stock_disponible', '>', 0)
+            ->get();
+    
+        // Si no hay productos disponibles, mostramos un error
+        if ($productos->isEmpty()) {
+            // Permanecer en la misma pantalla no tiene sentido si no existe
+            // la vista actual, así que puedes redirigir al index con error:
+            return redirect()->route('pedidos.index')
+                             ->withErrors(['error' => 'No hay productos disponibles para este evento.']);
+        }
+    
         return view('pedidos.create', compact('productos', 'eventoId'));
     }
+    
 
     /**
      * Guardar el pedido y sus detalles.
@@ -64,56 +92,113 @@ class PedidoController extends Controller
     {
         $externo = Auth::guard('externo')->user();
         if (!$externo) {
-            return redirect()->route('login')->withErrors(['error' => 'Debes iniciar sesión.']);
+            return redirect()->route('login')
+                             ->withErrors(['error' => 'Debes iniciar sesión como usuario externo.']);
         }
-
-        // El formulario envía un array de [producto_evento_id => cantidad]
+    
+        // Array de [producto_evento_id => cantidad]
         $productosSeleccionados = $request->input('productos', []);
-
-        // Creamos la cabecera del pedido
+    
+        // 1) Verificar si seleccionó al menos un producto con cantidad > 0
+        $totalProductos = 0;
+        foreach ($productosSeleccionados as $productoId => $cant) {
+            if ((int)$cant > 0) {
+                $totalProductos++;
+            }
+        }
+    
+        if ($totalProductos === 0) {
+            // No seleccionó nada
+            return redirect()->back()
+                             ->withErrors(['error' => 'No has seleccionado ningún producto.'])
+                             ->withInput();
+        }
+    
+        // 2) Crear la cabecera del pedido con estado "pendiente"
         $pedido = Pedido::create([
             'evento_id'  => $eventoId,
             'externo_id' => $externo->id,
-            'cantidad'   => 0,          // Se calculará luego
-            'total'      => 0,          // Se calculará luego
-            'estado'     => 'pendiente' // Estado inicial
+            'cantidad'   => 0,
+            'total'      => 0,
+            'estado'     => 'pendiente',
         ]);
-
+    
         $totalItems  = 0;
         $totalPrecio = 0;
-
+        $errores     = [];
+    
         foreach ($productosSeleccionados as $productoId => $cant) {
             $cantidad = (int)$cant;
-            if ($cantidad <= 0) continue;
-
-            // Usamos el modelo ProductoEvento
-            $producto = ProductoEvento::find($productoId);
-            if ($producto) {
-                $precioUnitario = $producto->precio;
-                $subtotal       = $precioUnitario * $cantidad;
-
-                // Guardar detalle en la tabla pedido_detalles
-                PedidoDetalle::create([
-                    'pedido_id'          => $pedido->id,
-                    'producto_evento_id' => $producto->id,
-                    'cantidad'           => $cantidad,
-                    'precio_unitario'    => $precioUnitario,
-                ]);
-
-                $totalItems  += $cantidad;
-                $totalPrecio += $subtotal;
+            if ($cantidad <= 0) continue; // ignorar 0
+    
+            // Verificamos que el producto pertenezca al evento
+            $producto = ProductoEvento::where('id', $productoId)
+                                      ->where('evento_id', $eventoId)
+                                      ->first();
+    
+            if (!$producto) {
+                // Error: el producto no corresponde al evento
+                $errores[] = "El producto con ID $productoId no pertenece a este evento.";
+                continue;
             }
+    
+            // Verificar stock
+            if ($producto->stock_disponible < $cantidad) {
+                $errores[] = "No hay suficiente stock para el producto '{$producto->nombre}'. 
+                              Stock disponible: {$producto->stock_disponible}, solicitado: $cantidad.";
+                continue;
+            }
+    
+            // Calcular subtotal
+            $precioUnitario = $producto->precio;
+            $subtotal       = $precioUnitario * $cantidad;
+    
+            // Crear detalle del pedido
+            PedidoDetalle::create([
+                'pedido_id'          => $pedido->id,
+                'producto_evento_id' => $producto->id,
+                'cantidad'           => $cantidad,
+                'precio_unitario'    => $precioUnitario,
+            ]);
+    
+            // Actualizar totales
+            $totalItems  += $cantidad;
+            $totalPrecio += $subtotal;
+    
+            // (Opcional) Descontar stock
+            $producto->stock_disponible -= $cantidad;
+            $producto->save();
         }
-
-        // Actualizar totales en la cabecera del pedido
+    
+        // Si hubo errores (producto de otro evento o sin stock), abortamos el pedido
+        if (!empty($errores)) {
+            // Borramos el pedido creado para no dejarlo incompleto
+            $pedido->delete();
+            // Retornamos a la misma pantalla con errores
+            return redirect()->back()
+                             ->withErrors($errores)
+                             ->withInput();
+        }
+    
+        // Si no hay errores, actualizamos el pedido con los totales
         $pedido->update([
             'cantidad' => $totalItems,
             'total'    => $totalPrecio,
         ]);
-
-        return redirect()->route('pedidos.show', $pedido->id)
-                         ->with('success', 'Pedido creado correctamente.');
+    
+        // Si no se agregaron detalles, significa que todos eran 0 o con error
+        if ($totalItems === 0) {
+            $pedido->delete();
+            return redirect()->back()
+                             ->withErrors(['error' => 'No se pudo crear el pedido, revisa la selección de productos.'])
+                             ->withInput();
+        }
+    
+        // Todo correcto, redirigir a Mis Pedidos
+        return redirect()->route('pedidos.index')
+                         ->with('success', '¡Pedido creado correctamente!');
     }
+    
 
     /**
      * Ver detalle de un pedido (para el externo o el admin/superadmin).

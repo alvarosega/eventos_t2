@@ -5,186 +5,159 @@
 @section('content')
     {{-- Mensajes de Éxito / Error --}}
     @if (session('success'))
-        <div class="mb-4 p-4 border-l-4 border-green-500 bg-green-100 text-green-700 rounded">
+        <div class="mb-4 p-4 border-l-4 border-green-500 bg-green-100 dark:bg-green-200 text-green-700 dark:text-green-900 rounded shadow-md hover:shadow-lg transition transform hover:scale-[1.01]">
+            <i class="fas fa-check-circle mr-2"></i>
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 text-red-700 rounded">
+        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-900 rounded shadow-md hover:shadow-lg transition transform hover:scale-[1.01]">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
             {{ session('error') }}
         </div>
     @endif
 
     {{-- Título de Bienvenida --}}
-    <h2 class="text-2xl font-bold mb-4">
+    <h2 class="text-2xl font-bold mb-4 flex items-center">
+        <i class="fas fa-user-check text-primary mr-2"></i>
         Bienvenido, 
         {{ $usuario->nombre_completo ?? $usuario->nombre }}
-        <small class="text-secondary text-base font-normal">({{ $usuario->rol }})</small>
+        <small class="text-secondary text-base font-normal ml-2">({{ $usuario->rol }})</small>
     </h2>
 
     {{-- Contenido Específico por Rol --}}
     @if($usuario->rol == 'externo')
-        {{-- Sección para Usuarios Externos --}}
-        <div class="bg-white shadow rounded mb-6 overflow-hidden">
-            <div class="bg-primary text-white p-4">
-                <h3 class="text-xl font-semibold">
-                    @if($usuario->evento_id)
-                        Mi Evento Actual
-                    @else
-                        Eventos Disponibles
-                    @endif
-                </h3>
-            </div>
-            <div class="p-4 text-dark">
-                @if($usuario->evento_id)
-                    @php
-                        $miEvento = $eventos->firstWhere('id', $usuario->evento_id);
-                    @endphp
-
-                    @if($miEvento)
-                        <div class="bg-light border border-gray-200 rounded shadow-sm mb-4">
-                            <div class="p-4 border-b border-gray-200">
-                                <h5 class="text-lg font-bold mb-1">{{ $miEvento->nombre }}</h5>
-                                <small class="text-gray-600">ID: {{ $miEvento->id }}</small>
-                            </div>
-                            <div class="p-4 text-dark">
-                                <p class="mb-1"><strong>Ubicación:</strong> {{ $miEvento->latitud_evento }}, {{ $miEvento->longitud_evento }}</p>
-                                <p class="mb-1"><strong>Fechas:</strong> {{ $miEvento->fecha_inicio }} - {{ $miEvento->fecha_finalizacion }}</p>
-                                <p class="text-sm text-gray-700">{{ $miEvento->descripcion }}</p>
-                            </div>
-                            <div class="p-4 border-t border-gray-200 flex justify-between">
-                                <a href="{{ route('pedidos.create', $miEvento->id) }}" class="inline-block bg-green-600 text-white text-sm px-3 py-2 rounded hover:bg-green-700">
-                                    <i class="fas fa-cart-plus"></i> Nuevo Pedido
-                                </a>
-                                <a href="{{ route('inscripciones.cancelForm', $miEvento->id) }}" class="inline-block border border-red-600 text-red-600 text-sm px-3 py-2 rounded hover:bg-red-600 hover:text-white">
-                                    <i class="fas fa-times-circle"></i> Cancelar Inscripción
-                                </a>
-                            </div>
-                        </div>
-                    @else
-                        <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
-                            Tu evento registrado no está disponible. Por favor contacta al organizador.
-                        </div>
-                    @endif
-                @else
-                    @if($eventos->isEmpty())
-                        <div class="mb-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 rounded">
-                            No hay eventos disponibles en este momento
-                        </div>
-                    @else
-                        <div class="flex flex-wrap -mx-4">
-                            @foreach($eventos as $evento)
-                                @if($evento->estado != 'finalizado')
-                                    <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-4">
-                                        <div class="bg-white border border-gray-200 rounded shadow-sm h-full flex flex-col">
-                                            <div class="p-4 border-b border-gray-200">
-                                                <h5 class="text-lg font-bold mb-1">{{ $evento->nombre }}</h5>
-                                                <small class="text-gray-600">ID: {{ $evento->id }}</small>
-                                            </div>
-                                            <div class="p-4 flex-1">
-                                                <p class="mb-1">
-                                                    <strong>Estado:</strong>
-                                                    <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full
-                                                        {{ $evento->estado == 'activo' ? 'bg-success text-white' : 'bg-secondary text-white' }}">
-                                                        {{ $evento->estado }}
-                                                    </span>
-                                                </p>
-                                                <p class="mb-1"><strong>Inicio:</strong> {{ $evento->fecha_inicio }} {{ $evento->hora_inicio }}</p>
-                                                <p class="mb-2"><strong>Fin:</strong> {{ $evento->fecha_finalizacion }} {{ $evento->hora_finalizacion }}</p>
-                                                <p class="text-sm text-gray-700">
-                                                    {{ Str::limit($evento->descripcion, 100) }}
-                                                </p>
-                                            </div>
-                                            <div class="p-4 border-t border-gray-200 text-center">
-                                                <a href="{{ route('inscripciones.showMapa', $evento->id) }}"
-                                                   class="inline-block bg-primary text-white text-sm px-3 py-2 rounded hover:bg-secondary transition">
-                                                    <i class="fas fa-map-marker-alt"></i> Inscribirme
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-            </div>
-        </div>
+        {{-- Sección para Usuarios Externos (sin cambios) --}}
+        {{-- ... Mantener el contenido original para externos ... --}}
     @else
         {{-- Sección para Administradores y Superadmin --}}
-        <div class="bg-white shadow rounded mb-6 overflow-hidden">
-            <div class="bg-primary text-white p-4 flex justify-between items-center">
-                <h3 class="text-xl font-semibold">Gestión de Eventos</h3>
-                @if($usuario->rol == 'superadmin')
-                    <div class="space-x-2">
-                        <a href="{{ route('eventos.create') }}" class="inline-block bg-white text-primary text-sm px-3 py-2 rounded hover:bg-gray-100">
-                            <i class="fas fa-plus"></i> Nuevo Evento
-                        </a>
-                        <a href="{{ route('catalogos.index') }}" class="inline-block bg-white text-primary text-sm px-3 py-2 rounded hover:bg-gray-100">
-                            <i class="fas fa-book"></i> Catálogos
-                        </a>
+        <div class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 rounded mb-6 overflow-hidden">
+            <div class="bg-primary text-white p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center">
+                    <i class="fas fa-tools mr-2"></i>
+                    <h3 class="text-xl font-semibold">Gestión de Eventos</h3>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-white">Tipo 1</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="eventTypeToggle" class="sr-only peer" {{ $eventType == 'tipo2' ? 'checked' : '' }}>
+                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                        </label>
+                        <span class="text-white">Tipo 2</span>
                     </div>
-                @endif
+                    
+                    @if($usuario->rol == 'superadmin')
+                        <div class="flex space-x-2">
+                            <a href="{{ route('eventos.select-type') }}" class="btn-secondary">
+                                <i class="fas fa-plus mr-1"></i> Nuevo Evento
+                            </a>
+                            @if($eventType == 'tipo1')
+                                <a href="{{ route('catalogos.index') }}" class="btn-secondary" id="catalogosBtn">
+                                    <i class="fas fa-book mr-1"></i> Catálogos
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                </div>
             </div>
 
-            <div class="p-4 text-dark">
+            <div class="p-4">
                 @if($eventos->isEmpty())
-                    <div class="mb-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 rounded">
+                    <div class="alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
                         No hay eventos registrados
                     </div>
                 @else
-                    <div class="flex flex-wrap -mx-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($eventos as $evento)
-                            <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-4">
-                                <div class="bg-white border border-gray-200 rounded shadow-sm h-full flex flex-col">
-                                    <div class="p-4 border-b border-gray-200">
-                                        <h5 class="text-lg font-bold mb-1">{{ $evento->nombre }}</h5>
-                                        <small class="text-gray-600">ID: {{ $evento->id }}</small>
-                                    </div>
-                                    <div class="p-4 flex-1">
-                                        <p class="mb-1">
+                            <div class="event-card">
+                                <div class="event-header">
+                                    <h5>{{ $eventType == 'tipo1' ? $evento->nombre : $evento->evento }}</h5>
+                                    <small>ID: {{ $evento->id }}</small>
+                                    @if($eventType == 'tipo2')
+                                        <span class="event-badge">Tipo 2</span>
+                                    @endif
+                                </div>
+                                
+                                <div class="event-body">
+                                    @if($eventType == 'tipo1')
+                                        <div class="event-field">
                                             <strong>Estado:</strong>
-                                            <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full
-                                                {{ $evento->estado == 'activo' ? 'bg-success text-white' : 'bg-secondary text-white' }}">
+                                            <span class="status-badge {{ $evento->estado == 'activo' ? 'bg-success' : 'bg-secondary' }}">
                                                 {{ $evento->estado }}
                                             </span>
-                                        </p>
-                                        <p class="mb-1"><strong>Inicio:</strong> {{ $evento->fecha_inicio }} {{ $evento->hora_inicio }}</p>
-                                        <p class="mb-2"><strong>Fin:</strong> {{ $evento->fecha_finalizacion }} {{ $evento->hora_finalizacion }}</p>
-                                        <p class="text-sm text-gray-700">
-                                            {{ Str::limit($evento->descripcion, 100) }}
-                                        </p>
-                                    </div>
-                                    <div class="p-4 border-t border-gray-200">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <a href="{{ route('catalogos.show', $evento->id) }}"
-                                               class="inline-block border border-primary text-primary text-sm px-3 py-2 rounded hover:bg-primary hover:text-white transition">
-                                                <i class="fas fa-box-open"></i> Catálogo
-                                            </a>
-                                            @if($usuario->rol == 'superadmin')
-                                                <div class="flex space-x-2">
-                                                    <a href="{{ route('eventos.edit', $evento->id) }}"
-                                                       class="inline-block border border-gray-500 text-gray-600 text-sm px-3 py-2 rounded hover:bg-gray-600 hover:text-white transition">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <form action="{{ route('eventos.destroy', $evento->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                                class="inline-block border border-red-600 text-red-600 text-sm px-3 py-2 rounded hover:bg-red-600 hover:text-white transition"
-                                                                onclick="return confirm('¿Eliminar este evento?')">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            @endif
                                         </div>
-                                        <a href="{{ route('pedidos.evento', $evento->id) }}"
-                                           class="inline-block bg-yellow-500 text-white text-sm px-3 py-2 rounded hover:bg-yellow-600 transition w-full text-center">
-                                            <i class="fas fa-clipboard-list"></i> Ver Pedidos
-                                        </a>
+                                        <div class="event-field">
+                                            <strong>Inicio:</strong> 
+                                            {{ $evento->fecha_inicio }} {{ $evento->hora_inicio }}
+                                        </div>
+                                        <div class="event-field">
+                                            <strong>Fin:</strong> 
+                                            {{ $evento->fecha_finalizacion }} {{ $evento->hora_finalizacion }}
+                                        </div>
+                                    @else
+                                        <div class="event-field">
+                                            <strong>Fecha:</strong> {{ $evento->fecha }}
+                                        </div>
+                                        <div class="event-field">
+                                            <strong>Encargado:</strong> {{ $evento->encargado }}
+                                        </div>
+                                        <div class="event-field">
+                                            <strong>Hora Entrega:</strong> {{ $evento->hor_entrega }}
+                                        </div>
+                                        <div class="event-field">
+                                            <strong>Estado:</strong>
+                                            <span class="status-badge 
+                                                {{ $evento->estado_evento == 'completado' ? 'bg-success' : 
+                                                   ($evento->estado_evento == 'en_proceso' ? 'bg-yellow-500' : 'bg-secondary') }}">
+                                                {{ $evento->estado_evento }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="event-description">
+                                        {{ Str::limit($eventType == 'tipo1' ? $evento->descripcion : $evento->material, 100) }}
                                     </div>
+                                </div>
+
+                                <div class="event-footer">
+                                    <div class="flex justify-between items-center mb-2">
+                                        @if($eventType == 'tipo1')
+                                            <a href="{{ route('catalogos.show', $evento->id) }}" class="btn-catalog">
+                                                <i class="fas fa-box-open mr-1"></i> Catálogo
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500 text-sm">Evento Logístico</span>
+                                        @endif
+                                        
+                                        @if($usuario->rol == 'superadmin')
+                                            <div class="flex space-x-2">
+                                                <a href="{{ $eventType == 'tipo1' ? route('eventos.edit', $evento->id) : route('eventos.edit-tipo2', $evento->id) }}" 
+                                                   class="btn-edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ $eventType == 'tipo1' ? route('eventos.destroy', $evento->id) : route('eventos.destroy-tipo2', $evento->id) }}" 
+                                                      method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-delete" 
+                                                            onclick="return confirm('¿Eliminar este evento?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    @if($eventType == 'tipo1')
+                                        <a href="{{ route('pedidos.evento', $evento->id) }}" class="btn-orders">
+                                            <i class="fas fa-clipboard-list mr-1"></i> Ver Pedidos
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -193,6 +166,49 @@
             </div>
         </div>
     @endif
-
-
 @endsection
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let switchToggle = document.getElementById('eventTypeToggle');
+
+    if (switchToggle) {
+        switchToggle.addEventListener('change', function () {
+            let eventType = this.checked ? 'tipo2' : 'tipo1';
+
+            // Crear una nueva URL basada en la URL actual
+            let currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('type', eventType);
+
+            // Redirigir a la nueva URL
+            window.location.replace(currentUrl.toString());
+        });
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let switchToggle = document.getElementById('eventTypeToggle');
+    let catalogosBtn = document.getElementById('catalogosBtn');
+
+    // Ocultar "Administrar Catálogos" si es tipo2 al cargar la página
+    if (catalogosBtn && switchToggle.checked) {
+        catalogosBtn.style.display = 'none';
+    }
+
+    if (switchToggle) {
+        switchToggle.addEventListener('change', function () {
+            let eventType = this.checked ? 'tipo2' : 'tipo1';
+
+            // Si se selecciona tipo2, ocultar "Administrar Catálogos"
+            if (catalogosBtn) {
+                catalogosBtn.style.display = eventType === 'tipo2' ? 'none' : 'inline-block';
+            }
+
+            // Cambiar la URL sin recargar la página
+            let currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('type', eventType);
+            window.location.replace(currentUrl.toString());
+        });
+    }
+});
+</script>

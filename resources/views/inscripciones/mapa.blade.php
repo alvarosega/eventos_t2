@@ -3,19 +3,24 @@
 @section('title', 'Inscripción al Evento')
 
 @section('content')
-    <h2 class="text-2xl font-bold mb-4">
+    <h2 class="text-2xl font-bold mb-4 flex items-center">
+        <i class="fas fa-map-marker-alt text-primary mr-2"></i>
         Selecciona tu ubicación para inscribirte a: {{ $evento->nombre }}
     </h2>
 
     @if (session('error'))
-        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 text-red-700 rounded">
+        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-900 rounded shadow hover:shadow-md transition transform hover:scale-[1.01]">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
             {{ session('error') }}
         </div>
     @endif
 
     <!-- Detalles del Evento -->
-    <div class="bg-white shadow rounded p-4 mb-4">
-        <h4 class="text-xl font-semibold mb-2">Detalles del Evento</h4>
+    <div class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow rounded p-4 mb-4 hover:shadow-xl transform hover:scale-[1.01] transition-all">
+        <h4 class="text-xl font-semibold mb-2 flex items-center">
+            <i class="fas fa-info-circle mr-2"></i>
+            Detalles del Evento
+        </h4>
         <p class="mb-1"><strong>Nombre:</strong> {{ $evento->nombre }}</p>
         <p class="mb-1"><strong>Fecha Inicio:</strong> {{ $evento->fecha_inicio }} - Hora: {{ $evento->hora_inicio }}</p>
         <p class="mb-1"><strong>Fecha Finalización:</strong> {{ $evento->fecha_finalizacion }} - Hora: {{ $evento->hora_finalizacion }}</p>
@@ -24,14 +29,14 @@
     </div>
 
     <!-- Mapa -->
-    <div id="map" class="w-full h-96 mb-4"></div>
+    <div id="map" class="w-full h-96 mb-4 border border-gray-300 dark:border-gray-600 rounded overflow-hidden"></div>
 
     <!-- Formulario para enviar lat y lng -->
     <form
         action="{{ route('inscripciones.storeUbicacion', $evento->id) }}"
         method="POST"
         enctype="multipart/form-data"
-        class="bg-white shadow rounded p-4"
+        class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow rounded p-4 hover:shadow-xl transform hover:scale-[1.01] transition-all"
     >
         @csrf
 
@@ -41,7 +46,8 @@
 
         <!-- Foto de referencia (opcional) -->
         <div class="mb-4">
-            <label for="foto_referencia" class="block mb-1 font-semibold text-sm text-secondary">
+            <label for="foto_referencia" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
+                <i class="fas fa-camera mr-1"></i>
                 Foto de Referencia (opcional)
             </label>
             <input
@@ -64,6 +70,7 @@
             id="btn-ubicacion-real"
             class="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition mb-4"
         >
+            <i class="fas fa-location-arrow mr-1"></i>
             Usar mi ubicación real
         </button>
 
@@ -72,6 +79,7 @@
             type="submit"
             class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
         >
+            <i class="fas fa-check mr-1"></i>
             Confirmar Ubicación
         </button>
     </form>
@@ -115,7 +123,7 @@
                 maxZoom: 19,
             }).addTo(map);
 
-            // Icono personalizado
+            // Icono personalizado (asegúrate de tener la imagen en /public/images/evento.jpeg)
             const eventIcon = L.icon({
                 iconUrl: '{{ asset("images/evento.jpeg") }}',
                 iconSize: [32, 32],

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nombre_completo');
             $table->string('legajo')->unique();
             $table->string('password');
-            $table->enum('rol', ['admin', 'superadmin'])->default('admin'); // ✅ Definir un valor por defecto
+            $table->enum('rol', ['admin', 'superadmin','master'])->default('admin'); // ✅ Definir un valor por defecto
             $table->rememberToken();
             $table->timestamps();
         });

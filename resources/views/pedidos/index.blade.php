@@ -3,7 +3,7 @@
 @section('title', 'Lista de Pedidos')
 
 @section('content')
-    <h1>Listaasd de Pedidos</h1>
+    <h1>lista de Pedidos</h1>
 
     {{-- Filtro de pedidos por estado --}}
     <form method="GET" action="{{ route('pedidos.index') }}" class="mb-3">
