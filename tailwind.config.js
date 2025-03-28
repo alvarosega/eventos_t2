@@ -16,25 +16,47 @@ export default {
     },
     extend: {
       colors: {
-        // Tema claro
-        lightBg: '#F9FAFB',
-        lightText: '#1F2937',
+        // Modo claro
+        lightBg: '#E0E7FF',        // fondo con tono frío
+        lightText: '#0F172A',
         lightCard: '#FFFFFF',
-
-        // Tema oscuro
-        darkBg: '#0F172A',
-        darkText: '#F1F5F9',
-        darkCard: '#1E293B',
-
-        // Tonos de marca (puedes cambiarlos a tu gusto)
-        primary: '#2F3645',
-        secondary: '#64748B',
-        success: '#16a34a',
-        danger: '#dc2626',
-        warning: '#f59e0b',
-        info: '#3b82f6',
+    
+        // Modo oscuro base futurista
+        darkBg: '#070617',         // negro profundo con matiz púrpura
+        darkText: '#E0E7FF',       // blanco azulado
+        darkCard: '#1A103D',       // púrpura oscuro semi-brillante
+    
+        // Acentos neón ciberpunk
+        primary: '#092429',        // fucsia neón
+        secondary: '#322566',      // cian neón
+        accentBlue: '#00b7ff',     // azul neón (complemento útil)
+        accentPink: '#ff4fff',     // rosa neón intenso
+    
+        success: '#00ff9c',        // verde neón
+        danger: '#ff3c6d',
+        warning: '#ffe600',
+        info: '#5ef1ff',
+    
+        glow: '#ff00ff',
       },
-    },
+    
+      boxShadow: {
+        neon: '0 0 10px #ff00ff, 0 0 20px #00ffff, 0 0 30px #ff00ff',
+        softGlow: '0 0 8px rgba(255, 0, 255, 0.5), 0 0 4px rgba(0, 255, 255, 0.4)',
+        cardGlow: '0 4px 20px rgba(255, 0, 255, 0.2)',
+      },
+    
+      backdropBlur: {
+        xs: '2px',
+        md: '6px',
+      }
+    }
+    ,
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    require('tailwindcss-animate'),
+  ],
+  
 };

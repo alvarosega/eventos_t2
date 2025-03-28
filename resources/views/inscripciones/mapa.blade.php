@@ -3,23 +3,23 @@
 @section('title', 'Inscripción al Evento')
 
 @section('content')
-    <h2 class="text-2xl font-bold mb-4 flex items-center">
+    <h2 class="text-2xl font-bold mb-4 flex items-center space-x-2">
         <i class="fas fa-map-marker-alt text-primary mr-2"></i>
-        Selecciona tu ubicación para inscribirte a: {{ $evento->nombre }}
+        <span>Selecciona tu ubicación para inscribirte a:</span> {{ $evento->nombre }}
     </h2>
 
     @if (session('error'))
-        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-900 rounded shadow hover:shadow-md transition transform hover:scale-[1.01]">
+        <div class="mb-4 p-4 border-l-4 border-red-500 bg-red-100 dark:bg-red-200 text-red-700 dark:text-red-900 rounded shadow transition transform hover:scale-[1.01]">
             <i class="fas fa-exclamation-triangle mr-1"></i>
             {{ session('error') }}
         </div>
     @endif
 
     <!-- Detalles del Evento -->
-    <div class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow rounded p-4 mb-4 hover:shadow-xl transform hover:scale-[1.01] transition-all">
-        <h4 class="text-xl font-semibold mb-2 flex items-center">
+    <div class="bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 shadow rounded p-4 mb-4 transition transform hover:scale-[1.01] hover:shadow-xl">
+        <h4 class="text-xl font-semibold mb-2 flex items-center space-x-2">
             <i class="fas fa-info-circle mr-2"></i>
-            Detalles del Evento
+            <span>Detalles del Evento</span>
         </h4>
         <p class="mb-1"><strong>Nombre:</strong> {{ $evento->nombre }}</p>
         <p class="mb-1"><strong>Fecha Inicio:</strong> {{ $evento->fecha_inicio }} - Hora: {{ $evento->hora_inicio }}</p>
@@ -29,15 +29,10 @@
     </div>
 
     <!-- Mapa -->
-    <div id="map" class="w-full h-96 mb-4 border border-gray-300 dark:border-gray-600 rounded overflow-hidden"></div>
+    <div id="map" class="w-full h-96 mb-4 border border-gray-300 dark:border-gray-600 rounded overflow-hidden shadow-md"></div>
 
     <!-- Formulario para enviar lat y lng -->
-    <form
-        action="{{ route('inscripciones.storeUbicacion', $evento->id) }}"
-        method="POST"
-        enctype="multipart/form-data"
-        class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow rounded p-4 hover:shadow-xl transform hover:scale-[1.01] transition-all"
-    >
+    <form action="{{ route('inscripciones.storeUbicacion', $evento->id) }}" method="POST" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 shadow rounded p-4 transition transform hover:scale-[1.01] hover:shadow-xl">
         @csrf
 
         <!-- Campos ocultos para lat y lng -->
@@ -50,35 +45,17 @@
                 <i class="fas fa-camera mr-1"></i>
                 Foto de Referencia (opcional)
             </label>
-            <input
-                type="file"
-                name="foto_referencia"
-                id="foto_referencia"
-                accept="image/*"
-                class="block w-full text-sm text-gray-500
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-primary file:text-white
-                       hover:file:bg-secondary"
-            />
+            <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
         </div>
 
         <!-- Botón ubicación real -->
-        <button
-            type="button"
-            id="btn-ubicacion-real"
-            class="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition mb-4"
-        >
+        <button type="button" id="btn-ubicacion-real" class="inline-block bg-primary text-white px-4 py-2 rounded transition hover:bg-secondary mb-4">
             <i class="fas fa-location-arrow mr-1"></i>
             Usar mi ubicación real
         </button>
 
         <!-- Botón confirmar ubicación -->
-        <button
-            type="submit"
-            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-        >
+        <button type="submit" class="inline-block bg-green-600 text-white px-4 py-2 rounded transition hover:bg-green-700">
             <i class="fas fa-check mr-1"></i>
             Confirmar Ubicación
         </button>
@@ -119,13 +96,11 @@
             const map = L.map('map').setView([eventoLat, eventoLng], 14);
 
             // Capa base (OpenStreetMap)
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-            }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-            // Icono personalizado (asegúrate de tener la imagen en /public/images/evento.jpeg)
+            // Icono personalizado
             const eventIcon = L.icon({
-                iconUrl: '{{ asset("images/evento.jpeg") }}',
+                iconUrl: '{{ asset("images/evento.png") }}',
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
                 popupAnchor: [0, -32]
@@ -149,7 +124,6 @@
             map.on('click', function(e) {
                 const lat = e.latlng.lat.toFixed(6);
                 const lng = e.latlng.lng.toFixed(6);
-
                 if (userMarker) map.removeLayer(userMarker);
                 userMarker = L.marker([lat, lng]).addTo(map);
                 updateHiddenFields(lat, lng);
@@ -161,12 +135,10 @@
                     alert("Tu navegador no soporta geolocalización.");
                     return;
                 }
-
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         const lat = pos.coords.latitude.toFixed(6);
                         const lng = pos.coords.longitude.toFixed(6);
-
                         if (userMarker) map.removeLayer(userMarker);
                         userMarker = L.marker([lat, lng]).addTo(map);
                         map.setView([lat, lng], 16);
@@ -184,3 +156,4 @@
         }
     </script>
 @endsection
+ 

@@ -20,7 +20,7 @@ class PedidoController extends Controller
     {
         // Si el usuario es empleado (admin/superadmin), mostrar todos los pedidos
         $empleado = Auth::guard('empleado')->user();
-        if ($empleado && in_array($empleado->rol, ['admin', 'superadmin'])) {
+        if ($empleado && in_array($empleado->rol, ['admin', 'superadmin','master'])) {
             $pedidos = Pedido::with('externo', 'evento')
                              ->when($request->estado, function ($query, $estado) {
                                  return $query->where('estado', $estado);
@@ -218,7 +218,7 @@ class PedidoController extends Controller
     {
         // Verificamos que sea admin o superadmin
         $empleado = Auth::guard('empleado')->user();
-        if (!$empleado || !in_array($empleado->rol, ['admin', 'superadmin'])) {
+        if (!$empleado || !in_array($empleado->rol, ['admin', 'superadmin','master'])) {
             abort(403, 'No tienes permisos para cambiar el estado del pedido.');
         }
 
@@ -264,13 +264,21 @@ class PedidoController extends Controller
      */
     public function updateEvidence(Request $request, Pedido $pedido)
     {
+        \Log::info('Entrando a updateEvidence', [
+            'pedido_id' => $pedido->id,
+            'tiene_archivo' => $request->hasFile('evidence'),
+        ]);
+    
         $request->validate(['evidence' => 'required|image|max:2048']);
-
+    
         if ($request->hasFile('evidence')) {
-            $path = $request->file('evidence')->store('evidencias', 'public');
+            $path = $request->file('evidence')->store('fotos_referencia', 'public');
             $pedido->update(['foto_evidencia' => $path]);
         }
-
+    
         return response()->json(['success' => true]);
     }
+    
+    
+    
 }

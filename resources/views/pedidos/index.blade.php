@@ -1,9 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Lista de Pedidos')
+@section('title', 'Lista de Pedisasdados')
 
 @section('content')
+
     <h1>lista de Pedidos</h1>
+    @if(Auth::guard('externo')->check() && isset($pedidos) && $pedidos->isNotEmpty())
+        @php
+            // Obtener el evento del primer pedido (ya que todos son del mismo evento para el externo)
+            $miEvento = $pedidos->first()->evento ?? null;
+        @endphp
+
+        @if($miEvento)
+            <a href="{{ route('pedidos.create', $miEvento->id) }}"
+            class="inline-block bg-green-600 text-white text-sm px-3 py-2 rounded hover:bg-green-700 mb-3">
+                <i class="fas fa-cart-plus"></i> Nuevo Pedido
+            </a>
+        @endif
+    @endif
+
 
     {{-- Filtro de pedidos por estado --}}
     <form method="GET" action="{{ route('pedidos.index') }}" class="mb-3">

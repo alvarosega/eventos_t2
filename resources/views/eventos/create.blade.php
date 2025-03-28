@@ -118,7 +118,6 @@
                 <option value="finalizado">Finalizado</option>
             </select>
         </div>
-
         <!-- Descripción -->
         <div class="mb-4">
             <label for="descripcion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">

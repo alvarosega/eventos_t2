@@ -18,8 +18,13 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
             $table->string('ubicacion')->nullable(); // Guardamos coordenadas "lat,lng"
             $table->enum('estado', ['activo', 'en espera', 'finalizado'])->default('en espera');
+        
+            // ✅ NUEVO: columna para legajo del usuario que crea el evento
+            $table->string('legajo');
+        
             $table->timestamps();
         });
+        
     }
 
     public function down(): void

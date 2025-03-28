@@ -108,10 +108,15 @@ class InscripcionController extends Controller
         // Manejo de la imagen (opcional)
         if ($request->hasFile('foto_referencia')) {
             $imagen = $request->file('foto_referencia');
-            $nombreImagen = 'ref_' . time() . '_' . $imagen->getClientOriginalName();
+            $telefono = $externo->numero_telefono ?? time(); // Si no hay número, usa timestamp
+            $extension = $imagen->getClientOriginalExtension();
+            $nombreImagen = 'ref_' . $telefono . '.' . $extension;
+        
+            // Almacenar la imagen en la carpeta fotos_referencia en storage/app/public
             $ruta = $imagen->storeAs('fotos_referencia', $nombreImagen, 'public');
-            $externo->foto_referencia = $ruta;
+            $externo->foto_referencia = $nombreImagen;
         }
+        
 
         // Guardar ubicación del usuario
         $externo->ubicacion = "{$usuarioLat},{$usuarioLng}";

@@ -12,6 +12,6 @@ class EventoTipo2 extends Model
         'fecha', 'evento', 'encargado', 'celular',
         'direccion', 'ubicacion', 'material',
         'hor_entrega', 'recojo', 'operador',
-        'supervisor', 'estado_evento'
+        'supervisor', 'estado_evento', 'legajo'
     ];
 }

@@ -40,14 +40,31 @@ Route::post('/registro-externo', [RegistroExternoController::class, 'register'])
 
 // Solo superadmin puede crear eventos (TIPO 1 - Original)
 Route::middleware(['auth:externo,empleado,web'])->group(function () {
+    Route::get('eventos/{id}/edit', [EventoController::class, 'edit'])->name('eventos.edit');
+    Route::put('eventos/{id}', [EventoController::class, 'update'])->name('eventos.update');
+    Route::delete('eventos/{id}', [EventoController::class, 'destroy'])->name('eventos.destroy');
+    Route::get('eventos-tipo2/{id}/edit', [EventoController::class, 'editTipo2'])->name('eventos.edit-tipo2');
+    Route::put('eventos-tipo2/{id}', [EventoController::class, 'updateTipo2'])->name('eventos.update-tipo2');
+    Route::delete('eventos-tipo2/{id}', [EventoController::class, 'destroyTipo2'])->name('eventos.destroy-tipo2');
+    
+    // Rutas para crear y almacenar eventos (Tipo 1 y Tipo 2)
     Route::get('/eventos/create', [EventoController::class, 'create'])->name('eventos.create');
     Route::post('/eventos/store', [EventoController::class, 'store'])->name('eventos.store');
     
-    // Nuevas rutas para EventoTipo2 (solo superadmin)
     Route::get('/eventos/select-type', [EventoController::class, 'selectType'])->name('eventos.select-type');
     Route::get('/eventos/create-tipo2', [EventoController::class, 'createTipo2'])->name('eventos.create-tipo2');
     Route::post('/eventos/store-tipo2', [EventoController::class, 'storeTipo2'])->name('eventos.store-tipo2');
+    Route::get('/eventos/admin', [EventoController::class, 'admin'])->name('eventos.admin');
+
+    // Ruta para administrar eventos (vía admin o eventos)
+    Route::middleware(['auth:empleado,externo,web'])->group(function () {
+        Route::get('/eventos/admin', [EventoController::class, 'admin'])->name('eventos.admin');
+    });
+    Route::get('/admin-eventos', [EventoController::class, 'adminEvents'])
+        ->name('admin.events')
+        ->middleware(['auth:externo,empleado,web']);
 });
+
 
 // Empleados (admin y superadmin) pueden editar/actualizar/eliminar eventos
 Route::middleware(['auth:empleado'])->group(function () {
@@ -63,25 +80,23 @@ Route::middleware(['auth:empleado'])->group(function () {
 /* =========================
    RUTAS PARA CATÁLOGOS
    ========================= */
-Route::middleware(['auth:externo,empleado,web'])->group(function () {
-    // Lista de eventos para administrar catálogos
-    Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos.index');
 
-    // Mostrar catálogo para un evento específico
+
+Route::middleware(['auth:externo,empleado,web'])->group(function () {
+
+    // Acceso para superadmin, admin y master: ver lista y catálogo
+    Route::get('/catalogos', [CatalogoController::class, 'index'])->name('catalogos.index');
     Route::get('/catalogos/{evento}', [CatalogoController::class, 'show'])->name('catalogos.show');
 
-    // Crear producto en el catálogo (solo superadmin)
+    // Acceso exclusivo para superadmin y master: crear, editar y eliminar productos
     Route::get('/catalogos/{evento}/create', [CatalogoController::class, 'create'])->name('catalogos.create');
     Route::post('/catalogos/{evento}', [CatalogoController::class, 'store'])->name('catalogos.store');
-
-    // Editar producto del catálogo (solo superadmin)
+    
     Route::get('/catalogos/producto/{id}/edit', [CatalogoController::class, 'edit'])->name('catalogos.edit');
     Route::put('/catalogos/producto/{id}', [CatalogoController::class, 'update'])->name('catalogos.update');
-
-    // Eliminar producto del catálogo (solo superadmin)
+    
     Route::delete('/catalogos/producto/{id}', [CatalogoController::class, 'destroy'])->name('catalogos.destroy');
 });
-
 /* =========================
    RUTAS PARA INSCRIPCIONES
    EXCLUSIVO PARA EXTERNOS
@@ -142,5 +157,5 @@ Route::middleware(['auth:empleado'])->group(function () {
 // Rutas para actualizar estado y subir evidencia (AJAX)
 Route::middleware(['auth:empleado'])->group(function () {
     Route::put('/pedidos/{pedido}/status', [PedidoController::class, 'updateStatus'])->name('pedidos.updateStatus');
-    Route::put('/pedidos/{pedido}/evidence', [PedidoController::class, 'updateEvidence'])->name('pedidos.updateEvidence');
+    Route::post('/pedidos/{pedido}/evidence', [PedidoController::class, 'updateEvidence'])->name('pedidos.updateEvidence');
 });  

@@ -5,7 +5,7 @@
 @section('content')
     <!-- Título -->
     <h2 class="text-2xl font-bold mb-4">
-        Catálogo del Evento: {{ $evento->nombre }}
+        Catálasogo del Evento: {{ $evento->nombre }}
     </h2>
 
     <!-- Mensaje de éxito -->
@@ -22,12 +22,13 @@
             Volver a Eventos
         </a>
 
-        @if(Auth::user()->rol === 'superadmin')
-            <a href="{{ route('catalogos.create', $evento->id) }}"
-               class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-               Agregar Producto
+        @if(in_array(Auth::user()->rol, ['superadmin', 'master']))
+        <a href="{{ route('catalogos.create', $evento->id) }}"
+            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            Agregar Producto
             </a>
         @endif
+
     </div>
 
     <!-- Contenido principal -->
@@ -44,9 +45,10 @@
                         <th class="p-2 font-semibold border-b">Stock Disponible</th>
                         <th class="p-2 font-semibold border-b">Imagen</th>
                         <th class="p-2 font-semibold border-b">Descripción</th>
-                        @if(Auth::user()->rol === 'superadmin')
-                            <th class="p-2 font-semibold border-b">Acciones</th>
+                        @if(in_array(Auth::user()->rol, ['superadmin', 'master']))
+                        <th class="p-2 font-semibold border-b">Acciones</th>
                         @endif
+
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -68,8 +70,8 @@
                                 @endif
                             </td>
                             <td class="p-2 border-b">{{ $producto->descripcion }}</td>
-                            @if(Auth::user()->rol === 'superadmin')
-                                <td class="p-2 border-b">
+                            @if(in_array(Auth::user()->rol, ['superadmin', 'master']))
+                            <td class="p-2 border-b">
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('catalogos.edit', $producto->id) }}"
                                            class="inline-block bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 transition">

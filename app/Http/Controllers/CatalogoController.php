@@ -13,7 +13,7 @@ class CatalogoController extends Controller
     public function index()
     {
         $usuario = Auth::user();
-        if (!in_array($usuario->rol, ['superadmin', 'admin'])) {
+        if (!in_array($usuario->rol, ['superadmin', 'admin','master'])) {
             abort(403, 'Acceso no autorizado');
         }
         $eventos = Evento::all();
@@ -33,7 +33,7 @@ class CatalogoController extends Controller
     public function create($evento_id)
     {
         $usuario = Auth::user();
-        if ($usuario->rol !== 'superadmin') {
+        if (!in_array($usuario->rol, ['superadmin','master'])) {
             abort(403, 'Acceso no autorizado');
         }
         $evento = Evento::findOrFail($evento_id);
@@ -44,7 +44,7 @@ class CatalogoController extends Controller
     public function store(Request $request, $evento_id)
     {
         $usuario = Auth::user();
-        if ($usuario->rol !== 'superadmin') {
+        if (!in_array($usuario->rol, ['superadmin','master'])) {
             abort(403, 'Acceso no autorizado');
         }
 
@@ -71,7 +71,7 @@ class CatalogoController extends Controller
     public function edit($id)
     {
         $usuario = Auth::user();
-        if ($usuario->rol !== 'superadmin') {
+        if (!in_array($usuario->rol, ['superadmin','master'])) {
             abort(403, 'Acceso no autorizado');
         }
         $producto = ProductoEvento::findOrFail($id);
@@ -82,7 +82,7 @@ class CatalogoController extends Controller
     public function update(Request $request, $id)
     {
         $usuario = Auth::user();
-        if ($usuario->rol !== 'superadmin') {
+        if (!in_array($usuario->rol, ['superadmin', 'master'])) {
             abort(403, 'Acceso no autorizado');
         }
         $producto = ProductoEvento::findOrFail($id);
@@ -108,7 +108,7 @@ class CatalogoController extends Controller
     public function destroy($id)
     {
         $usuario = Auth::user();
-        if ($usuario->rol !== 'superadmin') {
+        if (!in_array($usuario->rol, ['superadmin','master'])) {
             abort(403, 'Acceso no autorizado');
         }
         $producto = ProductoEvento::findOrFail($id);

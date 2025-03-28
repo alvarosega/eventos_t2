@@ -17,7 +17,8 @@ class Evento extends Model
         'hora_finalizacion',
         'descripcion',
         'estado',
-        'ubicacion',   // <--- Añadir
+        'ubicacion',
+        'legajo',   // <--- Añadir
     ];
     
     public function inscripciones()
