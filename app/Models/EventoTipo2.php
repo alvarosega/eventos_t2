@@ -14,4 +14,9 @@ class EventoTipo2 extends Model
         'hor_entrega', 'recojo', 'operador',
         'supervisor', 'estado_evento', 'legajo'
     ];
+    public function materials()
+    {
+        return $this->hasMany(EventoMaterial::class, 'evento_tipo2_id');
+    }
+
 }

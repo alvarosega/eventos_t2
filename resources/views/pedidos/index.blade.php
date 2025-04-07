@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <h1>lista de Pedidos</h1>
+    <h1>lista de Pedidoass</h1>
     @if(Auth::guard('externo')->check() && isset($pedidos) && $pedidos->isNotEmpty())
         @php
             // Obtener el evento del primer pedido (ya que todos son del mismo evento para el externo)

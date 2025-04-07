@@ -4,15 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Iniciar Sesión</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ Vite::asset('resources/images/imagenes/favicon.png') }}">
+
+  <!-- Estilos y scripts con Vite -->
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+  <!-- Fondo dinámico con Vite -->
+
+
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat" style="background-image: url('/images/fondo-login.jpg');">
+
+<body class="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat " style="background-image: url('{{ Vite::asset('resources/images/imagenes/fondo-login.jpg') }}');"
+>
   <!-- Capa de fondo para efecto ciberpunk -->
   <div class="absolute inset-0 bg-black opacity-60 mix-blend-multiply"></div>
 
   <!-- Logo flotante -->
   <div class="absolute top-4 left-4 z-50">
-    <img src="/images/logo.png" alt="Logo" class="w-14 h-14 drop-shadow-2xl">
+  <img src="{{ Vite::asset('resources/images/imagenes/logo.png') }}" alt="Logo" class="w-14 h-14 drop-shadow-2xl">
   </div>
 
   <!-- Botón flotante para cambiar modo oscuro/claro -->

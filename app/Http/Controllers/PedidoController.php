@@ -195,8 +195,9 @@ class PedidoController extends Controller
         }
     
         // Todo correcto, redirigir a Mis Pedidos
-        return redirect()->route('pedidos.index')
-                         ->with('success', '¡Pedido creado correctamente!');
+        return redirect()->route('home')
+            ->with('success', '¡Pedido creado correctamente!');
+    
     }
     
 
@@ -278,7 +279,4 @@ class PedidoController extends Controller
     
         return response()->json(['success' => true]);
     }
-    
-    
-    
 }

@@ -18,7 +18,7 @@
     }
 @endphp
 
-<h2 class="text-2xl font-bold mb-4">Pedidos del Evento: {{ $evento->nombre }}</h2>
+<h2 class="text-2xl font-bold mb-4">Pedidos del Evasdento: {{ $evento->nombre }}</h2>
 <p class="mb-2">Total de pedidos para este evento: <strong>{{ $pedidos->count() }}</strong></p>
 
 @if ($pedidos->isEmpty())

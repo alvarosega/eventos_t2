@@ -25,91 +25,135 @@
     <small class="text-secondary text-base font-normal">({{ $usuario->rol }})</small>
   </h2>
 
-  {{-- Contenido Específico por Rol --}}
   @if($usuario->rol == 'externo')
-    {{-- Sección para Usuarios Externos --}}
-    <div class="bg-white shadow rounded mb-6 overflow-hidden transform transition duration-300 hover:scale-[1.01]">
-      <div class="bg-primary text-white p-4">
-        <h3 class="text-xl font-semibold">
-          @if($usuario->evento_id)
-            Mi Evento Actual
-          @else
-            Eventos Disponibles
-          @endif
-        </h3>
-      </div>
-      <div class="p-4 text-dark">
+  {{-- Sección para Usuarios Externos --}}
+  <div class="bg-white shadow rounded mb-6 overflow-hidden transform transition duration-300 hover:scale-[1.01]">
+    <div class="bg-primary text-white p-4">
+      <h3 class="text-xl font-semibold">
         @if($usuario->evento_id)
-          @php
-            $miEvento = $eventos->firstWhere('id', $usuario->evento_id);
-          @endphp
-
-          @if($miEvento)
-            <div class="bg-light border border-gray-200 rounded shadow-sm mb-4 transform transition hover:shadow-lg">
-              <div class="p-4 border-b border-gray-200">
-                <h5 class="text-lg font-bold mb-1">{{ $miEvento->nombre }}</h5>
-                <small class="text-gray-600">ID: {{ $miEvento->id }}</small>
-              </div>
-              <div class="p-4 text-dark">
-                <p class="mb-1"><strong>Ubicación:</strong> {{ $miEvento->latitud_evento }}, {{ $miEvento->longitud_evento }}</p>
-                <p class="mb-1"><strong>Fechas:</strong> {{ $miEvento->fecha_inicio }} - {{ $miEvento->fecha_finalizacion }}</p>
-                <p class="text-sm text-gray-700">{{ $miEvento->descripcion }}</p>
-              </div>
-              <div class="p-4 border-t border-gray-200 flex justify-between">
-                <a href="{{ route('pedidos.create', $miEvento->id) }}" class="inline-block bg-green-600 text-white text-sm px-3 py-2 rounded transition-colors hover:bg-green-700">
-                  <i class="fas fa-cart-plus"></i> Nuevo Pedido
-                </a>
-                <a href="{{ route('inscripciones.cancelForm', $miEvento->id) }}" class="inline-block border border-red-600 text-red-600 text-sm px-3 py-2 rounded transition-colors hover:bg-red-600 hover:text-white">
-                  <i class="fas fa-times-circle"></i> Cancelar Inscripción
-                </a>
-              </div>
-            </div>
-          @else
-            <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded shadow-sm">
-              Tu evento registrado no está disponible. Por favor contacta al organizador.
-            </div>
-          @endif
+          Mi Evento Actual
         @else
-          @if($eventos->isEmpty())
-            <div class="mb-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 rounded shadow-sm">
-              No hay eventos disponibles en este momento
+          Eventos Disponibles
+        @endif
+      </h3>
+    </div>
+    <div class="p-4 text-dark">
+      @if($usuario->evento_id)
+        @php
+          $miEvento = $eventos->firstWhere('id', $usuario->evento_id);
+        @endphp
+
+        @if($miEvento)
+          <!-- Detalles del evento inscrito -->
+            <div class="p-4 border-t border-gray-200 flex justify-between">
+              <a href="{{ route('pedidos.create', $miEvento->id) }}" class="inline-block bg-green-600 text-white text-sm px-3 py-2 rounded transition-colors hover:bg-green-700">
+                <i class="fas fa-cart-plus"></i> Nuevo Pedido
+              </a>
+              <a href="{{ route('inscripciones.cancelForm', $miEvento->id) }}" class="inline-block border border-red-600 text-red-600 text-sm px-3 py-2 rounded transition-colors hover:bg-red-600 hover:text-white">
+                <i class="fas fa-times-circle"></i> Cancelar Inscripción
+              </a>
             </div>
-          @else
-            <div class="flex flex-wrap -mx-4">
-              @foreach($eventos as $evento)
-                @if($evento->estado != 'finalizado')
-                  <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-4">
-                    <div class="bg-white border border-gray-200 rounded shadow hover:shadow-lg h-full flex flex-col transform transition hover:scale-[1.02]">
-                      <div class="p-4 border-b border-gray-200">
-                        <h5 class="text-lg font-bold mb-1">{{ $evento->nombre }}</h5>
-                        <small class="text-gray-600">ID: {{ $evento->id }}</small>
-                      </div>
-                      <div class="p-4 flex-1">
-                        <p class="mb-1">
-                          <strong>Estado:</strong>
-                          <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full {{ $evento->estado == 'activo' ? 'bg-success text-white' : 'bg-secondary text-white' }}">
-                            {{ $evento->estado }}
-                          </span>
-                        </p>
-                        <p class="mb-1"><strong>Inicio:</strong> {{ $evento->fecha_inicio }} {{ $evento->hora_inicio }}</p>
-                        <p class="mb-2"><strong>Fin:</strong> {{ $evento->fecha_finalizacion }} {{ $evento->hora_finalizacion }}</p>
-                        <p class="text-sm text-gray-700">{{ Str::limit($evento->descripcion, 100) }}</p>
-                      </div>
-                      <div class="p-4 border-t border-gray-200 text-center">
-                        <a href="{{ route('inscripciones.showMapa', $evento->id) }}" class="inline-block bg-primary text-white text-sm px-3 py-2 rounded transition-colors hover:bg-secondary">
-                          <i class="fas fa-map-marker-alt"></i> Inscribirme
-                        </a>
-                      </div>
+            {{-- NUEVA SECCIÓN: Lista de Mis Pedidos --}}
+          <div class="bg-white shadow rounded p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-xl font-bold">Mis Pedidos</h4>
+              @if(isset($pedidos) && $pedidos->isNotEmpty())
+              @endif
+            </div>
+            @if($pedidos->isEmpty())
+              <p class="text-gray-700">No tienes pedidos registrados.</p>
+            @else
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">ID</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Cantidad</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Total</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Fecha</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    @foreach($pedidos as $pedido)
+                      <tr>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->id }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->cantidad }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ number_format($pedido->total, 2) }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-2 text-sm">
+                          @if ($pedido->estado == 'pendiente')
+                            <span class="px-2 py-1 bg-yellow-300 text-yellow-800 rounded-full text-xs">Pendiente</span>
+                          @elseif ($pedido->estado == 'en_preparacion')
+                            <span class="px-2 py-1 bg-blue-300 text-blue-800 rounded-full text-xs">En Preparación</span>
+                          @elseif ($pedido->estado == 'enviado')
+                            <span class="px-2 py-1 bg-indigo-300 text-indigo-800 rounded-full text-xs">Enviado</span>
+                          @elseif ($pedido->estado == 'entregado')
+                            <span class="px-2 py-1 bg-green-300 text-green-800 rounded-full text-xs">Entregado</span>
+                          @endif
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            @endif
+          </div>
+
+          {{-- NUEVA SECCIÓN: Mapa de Ubicaciones del Evento --}}
+          <div class="mb-6">
+            <h4 class="text-xl font-bold mb-2">Ubicación del Evento</h4>
+            <div id="map" class="w-full h-64 border border-gray-300 rounded shadow"></div>
+          </div>
+
+
+        @else
+          <div class="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded shadow-sm">
+            Tu evento registrado no está disponible. Por favor, contacta al organizador.
+          </div>
+        @endif
+      @else
+        {{-- Mostrar eventos disponibles para inscripción --}}
+        @if($eventos->isEmpty())
+          <div class="mb-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 rounded shadow-sm">
+            No hay eventos disponibles en este momento.
+          </div>
+        @else
+          <div class="flex flex-wrap -mx-4">
+            @foreach($eventos as $evento)
+              @if($evento->estado != 'finalizado')
+                <div class="w-full md:w-1/2 lg:w-1/3 px-4 mb-4">
+                  <div class="bg-white border border-gray-200 rounded shadow hover:shadow-lg h-full flex flex-col transform transition hover:scale-[1.02]">
+                    <div class="p-4 border-b border-gray-200">
+                      <h5 class="text-lg font-bold mb-1">{{ $evento->nombre }}</h5>
+                      <small class="text-gray-600">ID: {{ $evento->id }}</small>
+                    </div>
+                    <div class="p-4 flex-1">
+                      <p class="mb-1">
+                        <strong>Estado:</strong>
+                        <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full {{ $evento->estado == 'activo' ? 'bg-success text-white' : 'bg-secondary text-white' }}">
+                          {{ $evento->estado }}
+                        </span>
+                      </p>
+                      <p class="mb-1"><strong>Inicio:</strong> {{ $evento->fecha_inicio }} {{ $evento->hora_inicio }}</p>
+                      <p class="mb-2"><strong>Fin:</strong> {{ $evento->fecha_finalizacion }} {{ $evento->hora_finalizacion }}</p>
+                      <p class="text-sm text-gray-700">{{ Str::limit($evento->descripcion, 100) }}</p>
+                    </div>
+                    <div class="p-4 border-t border-gray-200 text-center">
+                      <a href="{{ route('inscripciones.showMapa', $evento->id) }}" class="inline-block bg-primary text-white text-sm px-3 py-2 rounded transition-colors hover:bg-secondary">
+                        <i class="fas fa-map-marker-alt"></i> Inscribirme
+                      </a>
                     </div>
                   </div>
-                @endif
-              @endforeach
-            </div>
-          @endif
+                </div>
+              @endif
+            @endforeach
+          </div>
         @endif
-      </div>
+      @endif
     </div>
-  @else
+  </div>
+@else
     {{-- Sección para Administradores y Superadmin --}}
     <div class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-100 rounded mb-6 overflow-hidden">
       <div class="bg-primary text-white p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -272,3 +316,43 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      @if($usuario->rol == 'externo' && $usuario->evento_id && isset($miEvento))
+        // Obtener la ubicación del evento; se espera que $miEvento->ubicacion contenga "lat,lng;lat,lng;..."
+        const ubicacionEvento = "{{ $miEvento->ubicacion }}";
+        const coordenadasEvento = ubicacionEvento.split(';').filter(c => c.trim() !== '');
+        let coordenadasValidas = [];
+        let eventoLat = 0;
+        let eventoLng = 0;
+        if (coordenadasEvento.length > 0) {
+          coordenadasValidas = coordenadasEvento.map(coord => {
+            const partes = coord.split(',').map(p => parseFloat(p.trim()));
+            return { lat: partes[0], lng: partes[1] };
+          }).filter(coord => !isNaN(coord.lat) && !isNaN(coord.lng));
+          if (coordenadasValidas.length > 0) {
+            eventoLat = coordenadasValidas[0].lat;
+            eventoLng = coordenadasValidas[0].lng;
+          }
+        }
+        // Inicializar mapa en el div con id 'map'
+        const map = L.map('map').setView([eventoLat, eventoLng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        // Icono personalizado para las ubicaciones del evento
+        const eventIcon = L.icon({
+          iconUrl: '{{ Vite::asset("resources/images/imagenes/evento.png") }}',
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32]
+        });
+        // Agregar marcadores para cada coordenada válida
+        coordenadasValidas.forEach((coord, index) => {
+          L.marker([coord.lat, coord.lng], { icon: eventIcon })
+            .bindPopup(`Punto ${index + 1}: {{ $miEvento->nombre }}`)
+            .addTo(map);
+        });
+      @endif
+    });
+  </script>

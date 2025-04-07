@@ -45,19 +45,21 @@ class EventoController extends Controller
     public function createTipo2()
     {
         $usuario = Auth::user();
+        
         if (!in_array($usuario->rol, ['superadmin', 'master'])) {
             abort(403, 'Acceso no autorizado. Se requiere superadmin.');
         }
     
-        // Si el usuario es master, obtener la lista de empleados con rol superadmin y master
         if ($usuario->rol === 'master') {
             $empleados = \App\Models\Empleado::whereIn('rol', ['superadmin', 'master'])->get();
-            return view('eventos.create-tipo2', compact('empleados'));
+            return view('eventos.create-tipo2', compact('usuario', 'empleados'));
         }
     
-        // Si es superadmin, se asigna automáticamente su legajo y nombre
-        return view('eventos.create-tipo2');
+        // Si es superadmin (o cualquier otro rol permitido), 
+        // retornamos la vista igual, pero pasando también $usuario
+        return view('eventos.create-tipo2', compact('usuario'));
     }
+    
     
 
     /**
@@ -104,26 +106,59 @@ class EventoController extends Controller
             'fecha'         => 'required|date',
             'evento'        => 'required|string|max:255',
             'encargado'     => 'required|string|max:255',
-            'celular'       => 'required|string|max:20',
+            'celular'       => 'required|digits:8',
             'direccion'     => 'required|string|max:255',
             'ubicacion'     => 'required|string',
-            'material'      => 'required|string',
+            'material'      => 'nullable|string', // Este campo puede quedar vacío
             'hor_entrega'   => 'required',
-            'recojo'        => 'required|boolean',
+            'recojo'        => 'required|string',
             'operador'      => 'required|string|max:255',
             'supervisor'    => 'required|string|max:255',
-            'estado_evento' => 'required|in:pendiente,en_proceso,completado',
-            // ❌ Falta validar legajo aquí:
+            'estado_evento' => 'required|in:pendiente,aprobado,cancelado,rechazado',
         ]);
     
-        // ✅ Añadir legajo al arreglo si no fue validado
+        // Si no se envía 'material' en el request, se asigna cadena vacía
+        if (!isset($validated['material'])) {
+            $validated['material'] = '';
+        }
+    
+        // Convertir el valor de recojo de "YYYY-MM-DDTHH:MM" a "YYYY-MM-DD HH:MM:SS"
+        $validated['recojo'] = str_replace('T', ' ', $validated['recojo']) . ':00';
+    
+        // Se toma el legajo enviado desde el formulario
         $validated['legajo'] = $request->input('legajo');
     
-        EventoTipo2::create($validated);
+        // Crear el evento tipo2
+        $eventoTipo2 = \App\Models\EventoTipo2::create($validated);
+    
+        // Procesar los materiales dinámicos enviados
+        if ($request->has('material_item')) {
+            $materialItems = $request->input('material_item'); // Array de materiales
+            $materialQuantities = $request->input('material_quantity'); // Array de cantidades
+    
+            foreach ($materialItems as $index => $materialName) {
+                $cantidad = $materialQuantities[$index] ?? 0;
+                $fotoEntregadoPath = null;
+                if ($request->hasFile("material_photo.$index")) {
+                    $fotoEntregadoPath = $request->file("material_photo.$index")->store('evento_materials', 'public');
+                }
+    
+                \App\Models\EventoMaterial::create([
+                    'evento_tipo2_id' => $eventoTipo2->id,
+                    'material'        => $materialName,
+                    'cantidad'        => $cantidad,
+                    'foto_entregado'  => $fotoEntregadoPath,
+                    'foto_recibido'   => null, // Se asigna null inicialmente
+                    'legajo'          => $request->input('legajo'),
+                ]);
+            }
+        }
     
         return redirect()->route('home')
             ->with('success', 'Evento tipo 2 creado correctamente.');
     }
+    
+    
     
 
     public function edit($id)
@@ -182,21 +217,21 @@ class EventoController extends Controller
             abort(403, 'Acceso no autorizado (solo master).');
         }
     
-        $evento = EventoTipo2::findOrFail($id);
+        $evento = \App\Models\EventoTipo2::findOrFail($id);
     
         $validated = $request->validate([
             'fecha'         => 'required|date',
             'evento'        => 'required|string|max:255',
             'encargado'     => 'required|string|max:255',
-            'celular'       => 'required|string|max:20',
+            'celular'       => 'required|digits:8',
             'direccion'     => 'required|string|max:255',
             'ubicacion'     => 'required|string',
-            'material'      => 'required|string',
+            'material'      => 'nullable|string',
             'hor_entrega'   => 'required',
-            'recojo'        => 'required|boolean',
+            'recojo'        => 'required|string',
             'operador'      => 'required|string|max:255',
             'supervisor'    => 'required|string|max:255',
-            'estado_evento' => 'required|in:pendiente,en_proceso,completado',
+            'estado_evento' => 'required|in:pendiente,aprobado,cancelado,rechazado',
         ]);
     
         $evento->update($validated);
@@ -204,6 +239,7 @@ class EventoController extends Controller
         return redirect()->route('home')
             ->with('success', 'Evento tipo 2 actualizado correctamente.');
     }
+    
     
     /**
      * Eliminar evento tipo1

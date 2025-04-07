@@ -52,79 +52,72 @@ class InscripcionController extends Controller
         if (!$externo) {
             return redirect()->route('login')->withErrors(['error' => 'Debe iniciar sesión como usuario externo.']);
         }
-
+    
         if ($externo->evento_id) {
             return redirect()->route('home')->withErrors(['error' => 'Ya estás inscrito a un evento.']);
         }
-
+    
         $evento = Evento::findOrFail($eventoId);
-
+    
         if ($evento->estado == 'finalizado') {
             return redirect()->route('inscripciones.index')->withErrors(['error' => 'El evento está finalizado.']);
         }
-
+    
+        // Validar lat, lng y que la foto sea obligatoria
         $request->validate([
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
-            'foto_referencia' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_referencia' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
+    
         $usuarioLat = $request->input('lat');
         $usuarioLng = $request->input('lng');
-
+    
         // Verificar si el evento tiene ubicaciones definidas
         $ubicacionEvento = $evento->ubicacion;
         if (empty($ubicacionEvento)) {
             return redirect()->route('inscripciones.index')
                 ->withErrors(['error' => 'El evento no tiene ubicación definida.']);
         }
-
-        // Obtener la primera ubicación válida del evento
+    
+        // Obtener la primera ubicación válida del evento para validar formato
         $coordenadasEvento = explode(';', $ubicacionEvento);
         $primeraCoordenada = trim($coordenadasEvento[0]);
         $partes = explode(',', $primeraCoordenada);
-
         if (count($partes) !== 2 || !is_numeric($partes[0]) || !is_numeric($partes[1])) {
             return redirect()->route('inscripciones.index')
                 ->withErrors(['error' => 'Ubicación del evento inválida.']);
         }
-
-        $latEvento = $partes[0];
-        $lngEvento = $partes[1];
-
-        // Calcular distancia entre el usuario y la primera ubicación del evento
-        $distanciaKm = $this->calcularDistancia(
-            $latEvento,
-            $lngEvento,
-            $usuarioLat,
-            $usuarioLng
-        );
-
-        if ($distanciaKm > 3) {
-            return redirect()->route('inscripciones.index')
-                ->withErrors(['error' => 'Debes estar a menos de 3km del evento. Distancia actual: ' . round($distanciaKm, 2) . ' km']);
+    
+        // Se elimina la verificación de distancia
+    
+        // Manejo de la imagen (obligatoria)
+        $imagen = $request->file('foto_referencia');
+        $telefono = $externo->numero_telefono; // Usamos el número de teléfono del usuario
+        $eventoId = $evento->id;
+        $extension = $imagen->getClientOriginalExtension();
+        // Nombre de archivo: número de teléfono + '_' + eventoId + '.' + extensión
+        $nombreImagen = $telefono . '_' . $eventoId . '.' . $extension;
+        $rutaDestino = 'fotos/referencia/' . $nombreImagen;
+    
+        // Eliminar imagen previa si existe
+        if (Storage::disk('public')->exists($rutaDestino)) {
+            Storage::disk('public')->delete($rutaDestino);
         }
-
-        // Manejo de la imagen (opcional)
-        if ($request->hasFile('foto_referencia')) {
-            $imagen = $request->file('foto_referencia');
-            $telefono = $externo->numero_telefono ?? time(); // Si no hay número, usa timestamp
-            $extension = $imagen->getClientOriginalExtension();
-            $nombreImagen = 'ref_' . $telefono . '.' . $extension;
-        
-            // Almacenar la imagen en la carpeta fotos_referencia en storage/app/public
-            $ruta = $imagen->storeAs('fotos_referencia', $nombreImagen, 'public');
-            $externo->foto_referencia = $nombreImagen;
-        }
-        
-
-        // Guardar ubicación del usuario
+    
+        // Almacenar la imagen en 'storage/app/public/fotos/referencia'
+        $imagen->storeAs('fotos/referencia', $nombreImagen, 'public');
+        $externo->foto_referencia = $nombreImagen;
+    
+        // Guardar ubicación del usuario e inscripción al evento
         $externo->ubicacion = "{$usuarioLat},{$usuarioLng}";
         $externo->evento_id = $evento->id;
         $externo->save();
-
+    
         return redirect()->route('home')->with('success', '¡Inscripción exitosa!');
     }
+    
+    
 
     private function calcularDistancia($lat1, $lng1, $lat2, $lng2)
     {

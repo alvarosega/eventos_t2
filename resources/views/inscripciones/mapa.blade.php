@@ -32,21 +32,22 @@
     <div id="map" class="w-full h-96 mb-4 border border-gray-300 dark:border-gray-600 rounded overflow-hidden shadow-md"></div>
 
     <!-- Formulario para enviar lat y lng -->
-    <form action="{{ route('inscripciones.storeUbicacion', $evento->id) }}" method="POST" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 shadow rounded p-4 transition transform hover:scale-[1.01] hover:shadow-xl">
+    <form id="formularioRegistro" action="{{ route('inscripciones.storeUbicacion', $evento->id) }}" method="POST" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 shadow rounded p-4 transition transform hover:scale-[1.01] hover:shadow-xl">
         @csrf
 
         <!-- Campos ocultos para lat y lng -->
         <input type="hidden" name="lat" id="lat">
         <input type="hidden" name="lng" id="lng">
 
-        <!-- Foto de referencia (opcional) -->
+        <!-- Campo: Foto de Referencia -->
         <div class="mb-4">
             <label for="foto_referencia" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
                 <i class="fas fa-camera mr-1"></i>
-                Foto de Referencia (opcional)
+                Foto de Referencia
             </label>
-            <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
+            <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
         </div>
+
 
         <!-- Botón ubicación real -->
         <button type="button" id="btn-ubicacion-real" class="inline-block bg-primary text-white px-4 py-2 rounded transition hover:bg-secondary mb-4">
@@ -100,11 +101,12 @@
 
             // Icono personalizado
             const eventIcon = L.icon({
-                iconUrl: '{{ asset("images/evento.png") }}',
+                iconUrl: '{{ Vite::asset("resources/images/imagenes/evento.png") }}',
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
                 popupAnchor: [0, -32]
             });
+
 
             // Agregar marcadores del evento
             coordenadasValidas.forEach((coord, index) => {
@@ -154,6 +156,19 @@
             // Inicializar campos ocultos
             updateHiddenFields('', '');
         }
+
+        // Agregar verificación al envío del formulario
+        const formulario = document.getElementById('formularioRegistro');
+        formulario.addEventListener('submit', function(e) {
+            const lat = document.getElementById('lat').value;
+            const lng = document.getElementById('lng').value;
+            if (!lat || !lng) {
+                e.preventDefault();
+                alert("Por favor, selecciona tu ubicación haciendo clic en el mapa o usando 'Usar mi ubicación real'.");
+                return false;
+            }
+        });
+
     </script>
 @endsection
  

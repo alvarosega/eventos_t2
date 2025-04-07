@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('ubicacion');
             $table->text('material');
             $table->time('hor_entrega');
-            $table->boolean('recojo');
+            $table->dateTime('recojo');  // Se elimina ->change()
             $table->string('operador');
             $table->string('supervisor');
             $table->string('estado_evento');
