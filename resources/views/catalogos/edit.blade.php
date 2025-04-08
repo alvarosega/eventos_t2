@@ -23,7 +23,7 @@
             <label for="imagen" class="form-label">Imagen</label>
             @if($producto->imagen)
                 <div class="mb-2">
-                    <img src="{{ Storage::url($producto->imagen) }}" alt="{{ $producto->nombre }}" style="max-width: 150px;">
+                    <img src="{{ asset('storage/' . $producto->imagen) }}" alt="{{ $producto->nombre }}" style="max-width: 150px;">
                 </div>
             @endif
             <input type="file" class="form-control" id="imagen" name="imagen">

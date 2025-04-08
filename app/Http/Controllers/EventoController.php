@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Evento;
 use App\Models\EventoTipo2;
+use App\Models\Externo;
+
 
 class EventoController extends Controller
 {
@@ -204,7 +206,15 @@ class EventoController extends Controller
             'ubicacion'          => 'required|string',
         ]);
     
+        // Actualizar el evento
         $evento->update($validated);
+    
+        // Si el estado del evento pasó a 'finalizado',
+        // actualizamos la tabla "externos" para desinscribir a los usuarios
+        if ($validated['estado'] === 'finalizado') {
+            Externo::where('evento_id', $evento->id)
+                ->update(['evento_id' => null]);
+        }
     
         return redirect()->route('home')
             ->with('success', 'Evento tipo 1 actualizado correctamente.');

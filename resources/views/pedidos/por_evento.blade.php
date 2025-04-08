@@ -17,6 +17,33 @@
         return;
     }
 @endphp
+<style>
+  /* Remueve estilos por defecto del divIcon */
+  .leaflet-div-icon.custom-pin {
+      background: none;
+      border: none;
+  }
+
+  /* Contenedor con forma de pin */
+  .custom-pin-container {
+      position: relative;
+      width: 80px;      /* Ajusta el tamaño según lo necesites */
+      height: 80px;
+      background-image: url('/images/pin-shape.png'); /* Imagen de fondo con forma de pin */
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  /* La imagen del usuario se coloca centrada dentro del "pin" */
+  .custom-pin-container img {
+      width: 48px;       /* Ajusta el tamaño de la imagen */
+      height: 48px;
+      object-fit: cover;
+      border-radius: 50%; /* O elimina el border-radius si deseas conservar la forma original de la imagen */
+  }
+</style>
 
 <h2 class="text-2xl font-bold mb-4">Pedidos del Evanto: {{ $evento->nombre }}</h2>
 <p class="mb-2">Total de pedidos para este evento: <strong>{{ $pedidos->count() }}</strong></p>
@@ -325,17 +352,34 @@ document.addEventListener('DOMContentLoaded', function () {
     window.userMarkers = [];
     markersData.usuarios.forEach((u, idx) => {
         if (!isNaN(u.lat) && !isNaN(u.lng)) {
-            let iconToUse = u.foto ? userIconWithPhoto : userIconNormal;
-            let popupContent = `<b>${u.nombre}</b><br>Tel: ${u.telefono}`;
+            let iconToUse;
+            if (u.foto) {
+                // Creamos el icono personalizado usando L.divIcon y HTML con la imagen dentro del contenedor pin
+                iconToUse = L.divIcon({
+                    html: `<div class="custom-pin-container">
+                            <img src="${u.foto}" alt="${u.nombre}" />
+                        </div>`,
+                    className: 'custom-pin', // clase para aplicar los estilos (la hoja de estilo la definimos arriba)
+                    iconSize: [50, 50],      // debe coincidir con el ancho/alto del contenedor
+                    iconAnchor: [25, 50],    // el "punto punta" del pin (centro inferior)
+                    popupAnchor: [0, -50]    // para que el popup se muestre por encima
+                });
+            } else {
+                // Si no hay foto, usar icono predeterminado (o el que ya tienes)
+                iconToUse = userIconNormal;
+            }
+
+            let popupContent = `<b>${u.nombre}</b><br>Tel: ${u.telefono || 'Sin teléfono'}`;
             if (u.foto) {
                 popupContent += `<br><a href="#" class="popup-image text-blue-600" data-img="${u.foto}">Ver imagen</a>`;
             }
             let marker = L.marker([u.lat, u.lng], { icon: iconToUse })
-                          .bindPopup(popupContent)
-                          .addTo(markersGroup);
+                        .bindPopup(popupContent)
+                        .addTo(markersGroup);
             window.userMarkers.push(marker);
         }
     });
+
 
     markersGroup.addTo(map);
 

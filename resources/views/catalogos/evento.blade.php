@@ -5,7 +5,7 @@
 @section('content')
     <!-- Título -->
     <h2 class="text-2xl font-bold mb-4">
-        Catálogo del Evento: {{ $evento->nombre }}
+        Catáalogo del Evento: {{ $evento->nombre }}
     </h2>
 
     <!-- Mensaje de éxito -->
@@ -59,9 +59,9 @@
                             <td class="p-2 border-b">{{ $producto->precio }}</td>
                             <td class="p-2 border-b">{{ $producto->stock_disponible }}</td>
                             <td class="p-2 border-b">
-                            @if($producto->imagen && file_exists(public_path('storage/' . $producto->imagen)))
+                            @if($producto->imagen)
                                 <img
-                                    src="{{ asset('storage/' . $producto->imagen) }}"
+                                    src="{{ Storage::url($producto->imagen) }}"
                                     alt="{{ $producto->nombre }}"
                                     class="max-w-[100px] h-auto rounded border"
                                 />

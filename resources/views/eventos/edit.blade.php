@@ -3,7 +3,7 @@
 @section('title', 'Editar Evento Tipo 1')
 
 @section('content')
-    <h1 class="text-2xl font-bold mb-6">Editar Evento Tipo 1</h1>
+    <h1 class="text-2xl font-bold mb-6">Ediatar Evento Tipo 1</h1>
 
     <form action="{{ route('eventos.update', $evento->id) }}" method="POST">
         @csrf
