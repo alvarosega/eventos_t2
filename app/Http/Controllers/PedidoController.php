@@ -95,110 +95,95 @@ class PedidoController extends Controller
             return redirect()->route('login')
                              ->withErrors(['error' => 'Debes iniciar sesión como usuario externo.']);
         }
-    
+        
         // Array de [producto_evento_id => cantidad]
         $productosSeleccionados = $request->input('productos', []);
-    
-        // 1) Verificar si seleccionó al menos un producto con cantidad > 0
-        $totalProductos = 0;
+        
+        // Verificar si seleccionó al menos un producto con cantidad > 0
+        $haySeleccion = false;
         foreach ($productosSeleccionados as $productoId => $cant) {
             if ((int)$cant > 0) {
-                $totalProductos++;
+                $haySeleccion = true;
+                break;
             }
         }
-    
-        if ($totalProductos === 0) {
-            // No seleccionó nada
+        if (!$haySeleccion) {
             return redirect()->back()
                              ->withErrors(['error' => 'No has seleccionado ningún producto.'])
                              ->withInput();
         }
     
-        // 2) Crear la cabecera del pedido con estado "pendiente"
-        $pedido = Pedido::create([
-            'evento_id'  => $eventoId,
-            'externo_id' => $externo->id,
-            'cantidad'   => 0,
-            'total'      => 0,
-            'estado'     => 'pendiente',
-        ]);
+        // Contador de cuántos pedidos fueron creados
+        $pedidosCreados = 0;
+        // Acumulador de errores
+        $errores = [];
     
-        $totalItems  = 0;
-        $totalPrecio = 0;
-        $errores     = [];
-    
+        // Recorrer cada producto seleccionado
         foreach ($productosSeleccionados as $productoId => $cant) {
             $cantidad = (int)$cant;
-            if ($cantidad <= 0) continue; // ignorar 0
+            if ($cantidad <= 0) {
+                continue;
+            }
     
-            // Verificamos que el producto pertenezca al evento
+            // Verificar que el producto pertenezca al evento
             $producto = ProductoEvento::where('id', $productoId)
                                       ->where('evento_id', $eventoId)
                                       ->first();
-    
             if (!$producto) {
-                // Error: el producto no corresponde al evento
                 $errores[] = "El producto con ID $productoId no pertenece a este evento.";
                 continue;
             }
     
             // Verificar stock
             if ($producto->stock_disponible < $cantidad) {
-                $errores[] = "No hay suficiente stock para el producto '{$producto->nombre}'. 
-                              Stock disponible: {$producto->stock_disponible}, solicitado: $cantidad.";
+                $errores[] = "No hay suficiente stock para el producto '{$producto->nombre}'. "
+                           . "Stock disponible: {$producto->stock_disponible}, solicitado: $cantidad.";
                 continue;
             }
     
             // Calcular subtotal
             $precioUnitario = $producto->precio;
-            $subtotal       = $precioUnitario * $cantidad;
+            $subtotal = $precioUnitario * $cantidad;
     
-            // Crear detalle del pedido
-            PedidoDetalle::create([
-                'pedido_id'          => $pedido->id,
-                'producto_evento_id' => $producto->id,
-                'cantidad'           => $cantidad,
-                'precio_unitario'    => $precioUnitario,
+            // Crear un registro en la tabla 'pedidos'
+            $nuevoPedido = \App\Models\Pedido::create([
+                'evento_id'  => $eventoId,
+                'externo_id' => $externo->id,
+                'nombre'     => $producto->nombre,   // Guardamos el nombre del producto
+                'precio'     => $precioUnitario,     // Guardamos el precio unitario
+                'cantidad'   => $cantidad,
+                'total'      => $subtotal,
+                'estado'     => 'pendiente',
             ]);
     
-            // Actualizar totales
-            $totalItems  += $cantidad;
-            $totalPrecio += $subtotal;
-    
-            // (Opcional) Descontar stock
-            $producto->stock_disponible -= $cantidad;
-            $producto->save();
+            if ($nuevoPedido) {
+                $pedidosCreados++;
+                // Descontar stock del producto
+                $producto->stock_disponible -= $cantidad;
+                $producto->save();
+            }
         }
     
-        // Si hubo errores (producto de otro evento o sin stock), abortamos el pedido
+        // Si no se creó ningún pedido, mostramos errores
+        if ($pedidosCreados === 0) {
+            if (empty($errores)) {
+                $errores[] = "No se pudo crear el pedido, revisa la selección de productos.";
+            }
+            return redirect()->back()->withErrors($errores)->withInput();
+        }
+    
+        // Si se crearon pedidos con éxito, pero hubo errores parciales, los mostramos:
         if (!empty($errores)) {
-            // Borramos el pedido creado para no dejarlo incompleto
-            $pedido->delete();
-            // Retornamos a la misma pantalla con errores
-            return redirect()->back()
-                             ->withErrors($errores)
-                             ->withInput();
+            return redirect()->back()->withErrors($errores)->withInput();
         }
     
-        // Si no hay errores, actualizamos el pedido con los totales
-        $pedido->update([
-            'cantidad' => $totalItems,
-            'total'    => $totalPrecio,
-        ]);
-    
-        // Si no se agregaron detalles, significa que todos eran 0 o con error
-        if ($totalItems === 0) {
-            $pedido->delete();
-            return redirect()->back()
-                             ->withErrors(['error' => 'No se pudo crear el pedido, revisa la selección de productos.'])
-                             ->withInput();
-        }
-    
-        // Todo correcto, redirigir a Mis Pedidos
+        // Todo correcto
         return redirect()->route('home')
-            ->with('success', '¡Pedido creado correctamente!');
-    
+            ->with('success', '¡Pedido(s) creado(s) correctamente!');
     }
+    
+    
+    
     
 
     /**

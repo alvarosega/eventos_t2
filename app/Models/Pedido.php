@@ -26,6 +26,8 @@ class Pedido extends Model
         'total',
         'estado',
         'foto_evidencia',
+        'nombre',
+        'precio',
     ];
 
     /**

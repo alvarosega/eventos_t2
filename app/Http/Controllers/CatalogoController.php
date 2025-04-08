@@ -59,8 +59,8 @@ class CatalogoController extends Controller
         $validated['evento_id'] = $evento_id;
 
         if($request->hasFile('imagen')){
-            $path = $request->file('imagen')->store('productos_evento', 'public');
-            $validated['imagen'] = $path;
+            $path = $request->file('imagen')->store('catalogos', 'public');
+            $validated['imagen'] = $path; // ejemplo: "catalogos/nombre.jpg"         
         }
 
         ProductoEvento::create($validated);
@@ -96,8 +96,8 @@ class CatalogoController extends Controller
         ]);
 
         if($request->hasFile('imagen')){
-            $path = $request->file('imagen')->store('productos_evento', 'public');
-            $validated['imagen'] = $path;
+            $path = $request->file('imagen')->store('catalogos', 'public');
+            $validated['imagen'] = $path;            
         }
 
         $producto->update($validated);

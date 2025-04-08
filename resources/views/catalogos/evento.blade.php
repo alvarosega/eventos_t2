@@ -5,7 +5,7 @@
 @section('content')
     <!-- Título -->
     <h2 class="text-2xl font-bold mb-4">
-        Catálasogo del Evento: {{ $evento->nombre }}
+        Catálogo del Evento: {{ $evento->nombre }}
     </h2>
 
     <!-- Mensaje de éxito -->
@@ -59,15 +59,16 @@
                             <td class="p-2 border-b">{{ $producto->precio }}</td>
                             <td class="p-2 border-b">{{ $producto->stock_disponible }}</td>
                             <td class="p-2 border-b">
-                                @if($producto->imagen)
-                                    <img
-                                        src="{{ Storage::url($producto->imagen) }}"
-                                        alt="{{ $producto->nombre }}"
-                                        class="max-w-[100px] h-auto"
-                                    />
-                                @else
-                                    <span class="text-gray-500">Sin imagen</span>
-                                @endif
+                            @if($producto->imagen && file_exists(public_path('storage/' . $producto->imagen)))
+                                <img
+                                    src="{{ asset('storage/' . $producto->imagen) }}"
+                                    alt="{{ $producto->nombre }}"
+                                    class="max-w-[100px] h-auto rounded border"
+                                />
+                            @else
+                                <span class="text-gray-500 text-sm">Sin imagen</span>
+                            @endif
+
                             </td>
                             <td class="p-2 border-b">{{ $producto->descripcion }}</td>
                             @if(in_array(Auth::user()->rol, ['superadmin', 'master']))

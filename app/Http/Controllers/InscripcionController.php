@@ -58,29 +58,31 @@ class InscripcionController extends Controller
         }
     
         $evento = Evento::findOrFail($eventoId);
-    
         if ($evento->estado == 'finalizado') {
             return redirect()->route('inscripciones.index')->withErrors(['error' => 'El evento está finalizado.']);
         }
     
-        // Validar lat, lng y que la foto sea obligatoria
-        $request->validate([
+        // Validación: Si el usuario no tiene fotografía de referencia, se obliga a enviarla.
+        $rules = [
             'lat' => 'required|numeric',
-            'lng' => 'required|numeric',
-            'foto_referencia' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+            'lng' => 'required|numeric'
+        ];
+        if (!$externo->foto_referencia) {
+            $rules['foto_referencia'] = 'required|image|mimes:jpeg,png,jpg|max:2048';
+        } else {
+            $rules['foto_referencia'] = 'nullable|image|mimes:jpeg,png,jpg|max:2048';
+        }
+        $request->validate($rules);
     
         $usuarioLat = $request->input('lat');
         $usuarioLng = $request->input('lng');
     
-        // Verificar si el evento tiene ubicaciones definidas
+        // Verificar que el evento tenga ubicaciones válidas (la lógica existente)
         $ubicacionEvento = $evento->ubicacion;
         if (empty($ubicacionEvento)) {
             return redirect()->route('inscripciones.index')
                 ->withErrors(['error' => 'El evento no tiene ubicación definida.']);
         }
-    
-        // Obtener la primera ubicación válida del evento para validar formato
         $coordenadasEvento = explode(';', $ubicacionEvento);
         $primeraCoordenada = trim($coordenadasEvento[0]);
         $partes = explode(',', $primeraCoordenada);
@@ -89,26 +91,24 @@ class InscripcionController extends Controller
                 ->withErrors(['error' => 'Ubicación del evento inválida.']);
         }
     
-        // Se elimina la verificación de distancia
-    
-        // Manejo de la imagen (obligatoria)
-        $imagen = $request->file('foto_referencia');
-        $telefono = $externo->numero_telefono; // Usamos el número de teléfono del usuario
-        $eventoId = $evento->id;
-        $extension = $imagen->getClientOriginalExtension();
-        // Nombre de archivo: número de teléfono + '_' + eventoId + '.' + extensión
-        $nombreImagen = $telefono . '_' . $eventoId . '.' . $extension;
-        $rutaDestino = 'fotos/referencia/' . $nombreImagen;
-    
-        // Eliminar imagen previa si existe
-        if (Storage::disk('public')->exists($rutaDestino)) {
-            Storage::disk('public')->delete($rutaDestino);
+        // Manejo de la imagen: solo se procesa si se subió un archivo
+        if ($request->hasFile('foto_referencia')) {
+            $imagen = $request->file('foto_referencia');
+            $telefono = $externo->numero_telefono; // Número de teléfono del usuario
+            $extension = $imagen->getClientOriginalExtension();
+            // Nombre de archivo: número de teléfono + '_' + eventoId + '.' + extensión
+            $nombreImagen = $telefono . '_' . $evento->id . '.' . $extension;
+            
+            // Si ya existe un archivo anterior, lo eliminamos (opcional)
+            if ($externo->foto_referencia && Storage::disk('public')->exists('externos_auth/' . $externo->foto_referencia)) {
+                Storage::disk('public')->delete('externos_auth/' . $externo->foto_referencia);
+            }
+            
+            // Almacenar la imagen en 'storage/app/public/externos_auth'
+            $imagen->storeAs('externos_auth', $nombreImagen, 'public');
+            $externo->foto_referencia = $nombreImagen;
         }
-    
-        // Almacenar la imagen en 'storage/app/public/fotos/referencia'
-        $imagen->storeAs('fotos/referencia', $nombreImagen, 'public');
-        $externo->foto_referencia = $nombreImagen;
-    
+        
         // Guardar ubicación del usuario e inscripción al evento
         $externo->ubicacion = "{$usuarioLat},{$usuarioLng}";
         $externo->evento_id = $evento->id;

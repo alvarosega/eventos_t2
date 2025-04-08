@@ -1,11 +1,15 @@
 @extends('layouts.app')
+@php
+    /** @var \App\Models\Externo $externo */
+    $externo = Auth::guard('externo')->user();
+@endphp
 
 @section('title', 'Inscripción al Evento')
 
 @section('content')
     <h2 class="text-2xl font-bold mb-4 flex items-center space-x-2">
         <i class="fas fa-map-marker-alt text-primary mr-2"></i>
-        <span>Selecciona tu ubicación para inscribirte a:</span> {{ $evento->nombre }}
+        <span>Selecciona tu ubiscación para inscribirte a:</span> {{ $evento->nombre }}
     </h2>
 
     @if (session('error'))
@@ -45,8 +49,21 @@
                 <i class="fas fa-camera mr-1"></i>
                 Foto de Referencia
             </label>
-            <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
+            @if($externo && $externo->foto_referencia)
+                <!-- Muestra la imagen actual si existe -->
+                <div class="mb-2">
+                    <img src="{{ asset('storage/externos_auth/' . $externo->foto_referencia) }}" alt="Foto de Referencia" class="max-w-xs rounded shadow">
+                </div>
+                <!-- Permite subir una nueva imagen de forma opcional -->
+                <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
+            @else
+                <!-- Si no hay imagen previa, se obliga a subirla -->
+                <input type="file" name="foto_referencia" id="foto_referencia" accept="image/*" required
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary transition-all" />
+            @endif
         </div>
+
 
 
         <!-- Botón ubicación real -->

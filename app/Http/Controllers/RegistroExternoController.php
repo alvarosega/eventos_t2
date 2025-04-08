@@ -19,20 +19,31 @@ class RegistroExternoController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'numero_telefono' => 'required|string|unique:externos',
-            'password' => 'required|string|min:8|confirmed',
-            'foto_referencia' => 'nullable|image|max:2048',
+            'nombre'            => 'required|string|max:255',
+            'numero_telefono'   => 'required|string|unique:externos',
+            'password'          => 'required|string|min:8|confirmed',
+            'foto_referencia'   => 'nullable|image|max:2048',
         ]);
-    
-        // Hashear la contraseña antes de guardarla
+
+        $filename = null;
+
+        if ($request->hasFile('foto_referencia')) {
+            // Obtenemos la extensión del archivo
+            $extension = $request->file('foto_referencia')->getClientOriginalExtension();
+            // Formamos el nombre del archivo usando el número de teléfono (por ejemplo, 123.png)
+            $filename = $request->numero_telefono . '.' . $extension;
+            // Guardamos el archivo en storage/app/public/externos_auth usando el disco "public"
+            $request->file('foto_referencia')->storeAs('externos_auth', $filename, 'public');
+        }
+
+        // Creamos el registro y hasheamos la contraseña
         $externo = Externo::create([
-            'nombre' => $request->nombre,
-            'numero_telefono' => $request->numero_telefono,
-            'password' => Hash::make($request->password), // ¡Aquí se hashea la contraseña!
-            'foto_referencia' => $request->file('foto_referencia') ? $request->file('foto_referencia')->store('fotos') : null,
+            'nombre'           => $request->nombre,
+            'numero_telefono'  => $request->numero_telefono,
+            'password'         => Hash::make($request->password),
+            'foto_referencia'  => $filename, // Aquí se guarda solo el nombre, sin ruta
         ]);
-    
+
         return redirect()->route('login')->with('success', 'Registro exitoso. Inicia sesión.');
     }
 }

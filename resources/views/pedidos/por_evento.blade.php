@@ -18,7 +18,7 @@
     }
 @endphp
 
-<h2 class="text-2xl font-bold mb-4">Pedidos del Evasdento: {{ $evento->nombre }}</h2>
+<h2 class="text-2xl font-bold mb-4">Pedidos del Evanto: {{ $evento->nombre }}</h2>
 <p class="mb-2">Total de pedidos para este evento: <strong>{{ $pedidos->count() }}</strong></p>
 
 @if ($pedidos->isEmpty())
@@ -29,7 +29,9 @@
             <thead class="bg-gray-100">
                 <tr>
                     <th class="px-4 py-2">ID</th>
-                    <th class="px-4 py-2">Nombre</th>
+                    <th class="px-4 py-2">Nombre (Usuario)</th>
+                    <th class="px-4 py-2">Producto</th>
+                    <th class="px-4 py-2">Precio Unitario</th>
                     <th class="px-4 py-2">Teléfono</th>
                     <th class="px-4 py-2">Foto Ref.</th>
                     <th class="px-4 py-2">Ubicación</th>
@@ -40,91 +42,89 @@
                     <th class="px-4 py-2">Fecha</th>
                 </tr>
             </thead>
+
+
             <tbody class="divide-y">
                 @foreach ($pedidos as $pedido)
                     @php
-                        $externo = $pedido->externo;  // Asumiendo relación 'externo'
+                        // Asumimos que la relación 'externo' devuelve el usuario externo
+                        $externo = $pedido->externo;
+                        // Si el usuario tiene ubicacion, se obtiene en array
                         $ubicacion = $externo && $externo->ubicacion 
-                            ? explode(',', $externo->ubicacion) 
-                            : null;
+                                    ? explode(',', $externo->ubicacion) 
+                                    : null;
                     @endphp
                     <tr class="hover:bg-gray-50" data-pedido-id="{{ $pedido->id }}">
                         <td class="px-4 py-2">{{ $pedido->id }}</td>
-                        <td class="px-4 py-2">
-                            {{ $externo->nombre ?? 'Desconocido' }}
-                        </td>
+                        <!-- Nombre del usuario externo -->
+                        <td class="px-4 py-2">{{ $externo->nombre ?? 'Desconocido' }}</td>
+                        <!-- Nombre del producto (nuevo) -->
+                        <td class="px-4 py-2">{{ $pedido->nombre }}</td>
+                        <!-- Precio unitario del producto (nuevo) -->
+                        <td class="px-4 py-2">${{ number_format($pedido->precio, 2) }}</td>
+                        <!-- Teléfono -->
                         <td class="px-4 py-2">
                             @if($externo && $externo->numero_telefono)
                                 <a href="https://wa.me/591{{ $externo->numero_telefono }}" target="_blank"
-                                   class="text-blue-600 hover:underline">
+                                class="text-blue-600 hover:underline">
                                     +591 {{ $externo->numero_telefono }}
                                 </a>
                             @else
                                 <span class="text-gray-500">Sin teléfono</span>
                             @endif
                         </td>
+                        <!-- Foto Referencia -->
                         <td class="px-4 py-2">
                             @if($externo && $externo->foto_referencia)
                                 <a href="#" class="view-image text-blue-600 hover:underline"
-                                   data-image-src="{{ asset('storage/fotos_referencia/'.$externo->foto_referencia) }}">
+                                data-image-src="{{ asset('storage/externos_auth/'.$externo->foto_referencia) }}">
                                     Ver imagen
                                 </a>
                             @else
                                 <span class="text-gray-500">Sin foto</span>
                             @endif
                         </td>
+
+                        <!-- Ubicación -->
                         <td class="px-4 py-2">
                             @if($ubicacion && count($ubicacion) === 2)
                                 <a href="#" class="view-location text-blue-600 hover:underline"
-                                   data-lat="{{ trim($ubicacion[0]) }}"
-                                   data-lng="{{ trim($ubicacion[1]) }}">
+                                data-lat="{{ trim($ubicacion[0]) }}"
+                                data-lng="{{ trim($ubicacion[1]) }}">
                                     Ver ubicación
                                 </a>
                             @else
                                 <span class="text-gray-500">Sin ubicación</span>
                             @endif
                         </td>
+                        <!-- Cantidad -->
                         <td class="px-4 py-2">{{ $pedido->cantidad }}</td>
+                        <!-- Total -->
+                        <td class="px-4 py-2">${{ number_format($pedido->total, 2) }}</td>
+                        <!-- Estado -->
                         <td class="px-4 py-2">
-                            ${{ number_format($pedido->total, 2) }}
-                        </td>
-                        <td class="px-4 py-2">
-                            {{-- Select para actualizar estado vía AJAX --}}
-                            <select class="border rounded px-2 py-1 status-select"
-                                    data-pedido-id="{{ $pedido->id }}">
-                                <option value="pendiente" 
-                                    {{ $pedido->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="en_preparacion" 
-                                    {{ $pedido->estado == 'en_preparacion' ? 'selected' : '' }}>En preparación</option>
-                                <option value="enviado" 
-                                    {{ $pedido->estado == 'enviado' ? 'selected' : '' }}>Enviado</option>
+                            <select class="border rounded px-2 py-1 status-select" data-pedido-id="{{ $pedido->id }}">
+                                <option value="pendiente" {{ $pedido->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                <option value="en_preparacion" {{ $pedido->estado == 'en_preparacion' ? 'selected' : '' }}>En preparación</option>
+                                <option value="enviado" {{ $pedido->estado == 'enviado' ? 'selected' : '' }}>Enviado</option>
                             </select>
                         </td>
+                        <!-- Evidencia -->
                         <td class="px-4 py-2">
-                            {{-- Subir evidencia vía AJAX --}}
                             <form class="evidence-form" enctype="multipart/form-data">
                                 @csrf
-                                <input
-                                    type="file"
-                                    name="evidence"
-                                    class="block w-full text-sm text-gray-500 evidence-input"
-                                    data-pedido-id="{{ $pedido->id }}"
-                                    accept="image/*"
-                                />
+                                <input type="file" name="evidence" class="block w-full text-sm text-gray-500 evidence-input" data-pedido-id="{{ $pedido->id }}" accept="image/*">
                                 @if($pedido->foto_evidencia)
-                                    <img src="{{ asset('storage/'.$pedido->foto_evidencia) }}" 
-                                        alt="Evidencia" 
-                                        class="mt-2 w-16 h-auto rounded shadow">
+                                    <img src="{{ asset('storage/'.$pedido->foto_evidencia) }}" alt="Evidencia" class="mt-2 w-16 h-auto rounded shadow">
                                 @endif
                             </form>
-
                         </td>
-                        <td class="px-4 py-2">
-                            {{ $pedido->created_at->format('d/m/Y H:i') }}
-                        </td>
+                        <!-- Fecha -->
+                        <td class="px-4 py-2">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
                     </tr>
                 @endforeach
             </tbody>
+
         </table>
     </div>
 @endif
@@ -166,9 +166,10 @@
                 'lng'     => (float) trim($exCoords[1]),
                 'nombre'  => $ex->nombre,
                 'telefono'=> $ex->numero_telefono ?? '',
-                'foto'    => $ex->foto_referencia 
-                                ? asset('storage/fotos_referencia/'.$ex->foto_referencia)
-                                : null,
+                'foto' => $ex->foto_referencia 
+                    ? asset('storage/externos_auth/'.$ex->foto_referencia)
+                    : null,
+
             ];
         }
     }
@@ -220,13 +221,14 @@
                         <td class="px-4 py-2">
                             @if($ex->foto_referencia)
                                 <a href="#" class="view-image text-blue-600 hover:underline"
-                                   data-image-src="{{ asset('storage/fotos_referencia/'.$ex->foto_referencia) }}">
+                                data-image-src="{{ asset('storage/externos_auth/'.$ex->foto_referencia) }}">
                                     Ver imagen
                                 </a>
                             @else
                                 <span class="text-gray-500">Sin foto</span>
                             @endif
                         </td>
+
                         <td class="px-4 py-2">
                             @if($exUbic && count($exUbic) === 2)
                                 <a href="#" class="view-ext-location text-blue-600 hover:underline"
@@ -249,6 +251,7 @@
 @endif
 
 {{-- Modal de imagen (oculto por defecto) --}}
+{{-- Modal de imagen (oculto por defecto) --}}
 <div id="imageModal" 
      class="fixed inset-0 bg-black/60 hidden items-center justify-center" 
      style="z-index: 9999;">
@@ -262,6 +265,7 @@
              class="w-full h-auto rounded">
     </div>
 </div>
+
 
 {{-- Botón "Volver" --}}
 <a href="{{ route('home') }}"
@@ -372,13 +376,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+
     document.querySelectorAll('.view-location').forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
             const lat = parseFloat(link.dataset.lat);
             const lng = parseFloat(link.dataset.lng);
             if (!isNaN(lat) && !isNaN(lng)) {
-                map.flyTo([lat, lng], 15);
+                map.flyTo([lat, lng], 18);
             }
         });
     });
@@ -389,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const lat = parseFloat(link.dataset.lat);
             const lng = parseFloat(link.dataset.lng);
             if (!isNaN(lat) && !isNaN(lng)) {
-                map.flyTo([lat, lng], 15);
+                map.flyTo([lat, lng], 18);
             }
         });
     });
