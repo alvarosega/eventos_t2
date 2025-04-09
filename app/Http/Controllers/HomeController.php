@@ -22,16 +22,14 @@ class HomeController extends Controller
         // Obtener el tipo de evento de la query string, por defecto 'tipo1'
         $eventType = $request->query('type', 'tipo1');
 
-        // Para usuarios externos: solo mostrar eventos con estado 'activo'
+        // Para usuarios externos se conservan los eventos activos
         if ($usuario->rol == 'externo') {
             $eventos = Evento::where('estado', 'activo')->get();
-        } elseif ($usuario->rol == 'superadmin') {
-            // Para superadmin se alterna entre eventos de tipo1 y tipo2 según query string
-            $eventos = ($eventType === 'tipo2')
-                ? EventoTipo2::all()  // Usar la tabla "eventos_tipo2"
-                : Evento::all();      // Usar la tabla original "eventos"
         } else {
-            $eventos = Evento::all();
+            // Para cualquier usuario no externo (incluyendo superadmin, master, etc.), se filtra según el tipo seleccionado.
+            $eventos = ($eventType === 'tipo2')
+                ? EventoTipo2::all()   // Devuelve solo los eventos del tipo 2
+                : Evento::all();       // Devuelve los eventos del tipo 1 (tabla original)
         }
 
         // Si el usuario es externo y tiene evento asignado, obtener sus pedidos filtrados
@@ -42,7 +40,7 @@ class HomeController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
         } else {
-            $pedidos = collect(); // colección vacía para otros roles
+            $pedidos = collect(); // Colección vacía para otros roles
         }
 
         return view('home', [

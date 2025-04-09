@@ -54,57 +54,51 @@
               </a>
             </div>
             {{-- NUEVA SECCIÓN: Lista de Mis Pedidos --}}
-            <div class="bg-white shadow rounded p-4">
-              <div class="flex items-center justify-between mb-4">
-                <h4 class="text-xl font-bold">Mis Pedidos</h4>
-                @if(isset($pedidos) && $pedidos->isNotEmpty())
-                  <!-- Aquí podrías agregar botones o controles si lo necesitas -->
-                @endif
-              </div>
-              @if($pedidos->isEmpty())
-                <p class="text-gray-700">No tienes pedidos registrados.</p>
-              @else
-                <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
-                      <tr>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">ID</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Producto</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Precio Unitario</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Cantidad</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Total</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Fecha</th>
-                        <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                      @foreach($pedidos as $pedido)
-                        <tr>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->id }}</td>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->nombre }}</td>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ number_format($pedido->precio, 2) }}</td>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->cantidad }}</td>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ number_format($pedido->total, 2) }}</td>
-                          <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
-                          <td class="px-4 py-2 text-sm">
-                            @if ($pedido->estado == 'pendiente')
-                              <span class="px-2 py-1 bg-yellow-300 text-yellow-800 rounded-full text-xs">Pendiente</span>
-                            @elseif ($pedido->estado == 'en_preparacion')
-                              <span class="px-2 py-1 bg-blue-300 text-blue-800 rounded-full text-xs">En Preparación</span>
-                            @elseif ($pedido->estado == 'enviado')
-                              <span class="px-2 py-1 bg-indigo-300 text-indigo-800 rounded-full text-xs">Enviado</span>
-                            @elseif ($pedido->estado == 'entregado')
-                              <span class="px-2 py-1 bg-green-300 text-green-800 rounded-full text-xs">Entregado</span>
-                            @endif
-                          </td>
-                        </tr>
-                      @endforeach
-                    </tbody>
-                  </table>
-                </div>
+          <div class="bg-white shadow rounded p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-xl font-bold">Mis Pedidos</h4>
+              @if(isset($pedidos) && $pedidos->isNotEmpty())
               @endif
             </div>
-
+            @if($pedidos->isEmpty())
+              <p class="text-gray-700">No tienes pedidos registrados.</p>
+            @else
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">ID</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Cantidad</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Total</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Fecha</th>
+                      <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    @foreach($pedidos as $pedido)
+                      <tr>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->id }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->cantidad }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ number_format($pedido->total, 2) }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-2 text-sm">
+                          @if ($pedido->estado == 'pendiente')
+                            <span class="px-2 py-1 bg-yellow-300 text-yellow-800 rounded-full text-xs">Pendiente</span>
+                          @elseif ($pedido->estado == 'en_preparacion')
+                            <span class="px-2 py-1 bg-blue-300 text-blue-800 rounded-full text-xs">En Preparación</span>
+                          @elseif ($pedido->estado == 'enviado')
+                            <span class="px-2 py-1 bg-indigo-300 text-indigo-800 rounded-full text-xs">Enviado</span>
+                          @elseif ($pedido->estado == 'entregado')
+                            <span class="px-2 py-1 bg-green-300 text-green-800 rounded-full text-xs">Entregado</span>
+                          @endif
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            @endif
+          </div>
 
           {{-- NUEVA SECCIÓN: Mapa de Ubicaciones del Evento --}}
           <div class="mb-6">
