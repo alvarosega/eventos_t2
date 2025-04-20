@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Evento;
 use App\Models\EventoTipo2;
+use App\Models\Material;
 use App\Models\Externo;
-
 
 class EventoController extends Controller
 {
@@ -104,6 +105,7 @@ class EventoController extends Controller
             abort(403, 'Acceso no autorizado. Se requiere superadmin.');
         }
     
+        // Validación principal
         $validated = $request->validate([
             'fecha'         => 'required|date',
             'evento'        => 'required|string|max:255',
@@ -111,53 +113,72 @@ class EventoController extends Controller
             'celular'       => 'required|digits:8',
             'direccion'     => 'required|string|max:255',
             'ubicacion'     => 'required|string',
-            'material'      => 'nullable|string', // Este campo puede quedar vacío
             'hor_entrega'   => 'required',
             'recojo'        => 'required|string',
             'operador'      => 'required|string|max:255',
             'supervisor'    => 'required|string|max:255',
             'estado_evento' => 'required|in:pendiente,aprobado,cancelado,rechazado',
+            'materiales'    => 'required|array|min:1',
+            'materiales.*.id' => 'required|exists:materiales,id',
+            'materiales.*.cantidad' => 'required|integer|min:1',
+            'materiales.*.foto_entrega' => 'required|image',
         ]);
     
-        // Si no se envía 'material' en el request, se asigna cadena vacía
-        if (!isset($validated['material'])) {
-            $validated['material'] = '';
-        }
+        // Procesamiento de fechas
+        $validated['recojo'] = Carbon::createFromFormat('Y-m-d\TH:i', $validated['recojo'])->format('Y-m-d H:i:s');    
+        DB::beginTransaction();
     
-        // Convertir el valor de recojo de "YYYY-MM-DDTHH:MM" a "YYYY-MM-DD HH:MM:SS"
-        $validated['recojo'] = str_replace('T', ' ', $validated['recojo']) . ':00';
+        try {
+            // Crear evento
+            $evento = EventoTipo2::create([
+                'fecha' => $validated['fecha'],
+                'evento' => $validated['evento'],
+                'encargado' => $validated['encargado'],
+                'celular' => $validated['celular'],
+                'direccion' => $validated['direccion'],
+                'ubicacion' => $validated['ubicacion'],
+                'hor_entrega' => $validated['hor_entrega'],
+                'recojo' => $validated['recojo'],
+                'operador' => $validated['operador'],
+                'supervisor' => $validated['supervisor'],
+                'estado_evento' => $validated['estado_evento'],
+                'legajo' => $request->input('legajo'),
+            ]);
     
-        // Se toma el legajo enviado desde el formulario
-        $validated['legajo'] = $request->input('legajo');
+            // Procesar materiales
+            foreach ($request->materiales as $materialData) {
+                $material = Material::findOrFail($materialData['id']);
     
-        // Crear el evento tipo2
-        $eventoTipo2 = \App\Models\EventoTipo2::create($validated);
-    
-        // Procesar los materiales dinámicos enviados
-        if ($request->has('material_item')) {
-            $materialItems = $request->input('material_item'); // Array de materiales
-            $materialQuantities = $request->input('material_quantity'); // Array de cantidades
-    
-            foreach ($materialItems as $index => $materialName) {
-                $cantidad = $materialQuantities[$index] ?? 0;
-                $fotoEntregadoPath = null;
-                if ($request->hasFile("material_photo.$index")) {
-                    $fotoEntregadoPath = $request->file("material_photo.$index")->store('evento_materials', 'public');
+                // Verificar stock
+                if ($material->stock_total < $materialData['cantidad']) {
+                    throw new \Exception("Stock insuficiente para {$material->nombre}");
                 }
     
-                \App\Models\EventoMaterial::create([
-                    'evento_tipo2_id' => $eventoTipo2->id,
-                    'material'        => $materialName,
-                    'cantidad'        => $cantidad,
-                    'foto_entregado'  => $fotoEntregadoPath,
-                    'foto_recibido'   => null, // Se asigna null inicialmente
-                    'legajo'          => $request->input('legajo'),
-                ]);
-            }
-        }
+                // Subir foto
+                $fotoPath = $materialData['foto_entrega']->store('materiales/entrega', 'public');
     
-        return redirect()->route('home')
-            ->with('success', 'Evento tipo 2 creado correctamente.');
+                // Adjuntar material al evento
+                $evento->materiales()->attach($material->id, [
+                    'cantidad' => $materialData['cantidad'],
+                    'fecha_entrega' => now(),
+                    'fecha_devolucion_estimada' => $validated['recojo'],
+                    'foto_entrega' => $fotoPath,
+                    'estado' => 'reservado'
+                ]);
+    
+                // Actualizar stock
+                $material->decrement('stock_total', $materialData['cantidad']);
+            }
+    
+            DB::commit();
+    
+            return redirect()->route('home')
+                ->with('success', 'Evento tipo 2 creado correctamente.');
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
     
     
@@ -317,5 +338,35 @@ class EventoController extends Controller
         }
         
         return view('eventos.admin', compact('usuario', 'eventType', 'eventos'));
-    }   
+    }
+
+    public function devolverMaterial(Request $request, $eventoId, $materialId) {
+        // Validar solo master
+        if (Auth::user()->rol !== 'master') abort(403);
+    
+        $validated = $request->validate([
+            'foto_devolucion' => 'required|image',
+            'cantidad_devuelta' => 'required|integer|min:1',
+            'estado' => 'required|in:devuelto,dañado',
+            'notas' => 'nullable|string'
+        ]);
+    
+        // Actualizar pivot
+        $pivot = DB::table('evento_material')
+            ->where('evento_tipo2_id', $eventoId)
+            ->where('material_id', $materialId)
+            ->update([
+                'fecha_devolucion_real' => now(),
+                'estado' => $validated['estado'],
+                'foto_devolucion' => $request->file('foto_devolucion')->store('devoluciones', 'public'),
+                'notas_devolucion' => $validated['notas']
+            ]);
+    
+        // Si está devuelto y no dañado, aumentar stock
+        if ($validated['estado'] === 'devuelto') {
+            Material::find($materialId)->increment('stock_total', $validated['cantidad_devuelta']);
+        }
+    
+        return back()->with('success', 'Material devuelto.');
+    }
 }

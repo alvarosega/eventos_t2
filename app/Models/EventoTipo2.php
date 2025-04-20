@@ -14,9 +14,8 @@ class EventoTipo2 extends Model
         'hor_entrega', 'recojo', 'operador',
         'supervisor', 'estado_evento', 'legajo'
     ];
-    public function materials()
-    {
-        return $this->hasMany(EventoMaterial::class, 'evento_tipo2_id');
+    public function materiales() {
+        return $this->belongsToMany(Material::class, 'evento_material')
+            ->withPivot(['cantidad', 'fecha_entrega', 'fecha_devolucion_estimada', 'estado', 'foto_entrega', 'foto_devolucion', 'notas_devolucion']);
     }
-
 }

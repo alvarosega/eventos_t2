@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
     {
         Schema::create('eventos_tipo2', function (Blueprint $table) {
@@ -16,34 +13,27 @@ return new class extends Migration
             $table->date('fecha');
             $table->string('evento');
             $table->string('encargado');
-            $table->string('celular');
+            $table->string('celular', 8);
             $table->string('direccion');
             $table->string('ubicacion');
-            $table->text('material');
             $table->time('hor_entrega');
-            $table->dateTime('recojo');  // Se elimina ->change()
+            $table->dateTime('recojo');
             $table->string('operador');
             $table->string('supervisor');
             $table->string('estado_evento');
-
-            // Nueva columna: Clave foránea 'legajo' vinculada con 'empleados.legajo'
-            $table->string('legajo')->nullable(); 
-            $table->foreign('legajo')->references('legajo')->on('empleados')->onDelete('set null');
-
+            $table->string('legajo')->nullable();
             $table->timestamps();
+    
+            // Clave foránea explícita
+            $table->foreign('legajo')
+                  ->references('legajo')
+                  ->on('empleados')
+                  ->onDelete('set null');
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    
+    public function down()
     {
-        Schema::table('eventos_tipo2', function (Blueprint $table) {
-            $table->dropForeign(['legajo']); // Eliminar la clave foránea antes de eliminar la columna
-            $table->dropColumn('legajo');
-        });
-
         Schema::dropIfExists('eventos_tipo2');
     }
 };

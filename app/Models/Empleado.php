@@ -19,4 +19,5 @@ class Empleado extends Authenticatable
         'password',
         'remember_token',
     ];
+
 }

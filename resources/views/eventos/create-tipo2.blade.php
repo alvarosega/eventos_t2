@@ -57,29 +57,27 @@
 
         <!-- Materiales Dinámicos -->
         <div class="mb-4">
-            <label class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                <i class="fas fa-boxes mr-1"></i> Materiales
+            <label class="block mb-1 font-semibold">
+                <i class="fas fa-boxes"></i> Materiales
             </label>
-            <div id="materialContainer"></div>
-            <button type="button" onclick="addMaterialRow()" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mt-2">
-                Agregar Material
-            </button>
-            @if($usuario->rol === 'master')
-                <div class="mt-2">
-                    <input type="text" id="nuevoMaterial" placeholder="Nuevo material" class="px-2 py-1 border rounded">
-                    <button type="button" onclick="addNewMaterial()" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
-                        Agregar a lista
-                    </button>
+            <div id="materialContainer">
+                <div class="flex gap-2 mb-2">
+                    <select name="materiales[0][id]" class="material-selector" required>
+                        <option value="">Seleccionar</option>
+                        @foreach(App\Models\Material::all() as $material)
+                            <option value="{{ $material->id }}" data-stock="{{ $material->stock_total }}">
+                                {{ $material->nombre }} (Stock: {{ $material->stock_total }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="number" name="materiales[0][cantidad]" min="1" placeholder="Cantidad" required>
+                    <input type="file" name="materiales[0][foto_entrega]" accept="image/*" required>
+                    <button type="button" onclick="removeMaterialRow(this)" class="bg-red-500 text-white px-2 rounded">X</button>
                 </div>
-            @endif
-        </div>
-
-        <!-- Fotos de Recepción -->
-        <div class="mb-4">
-            <label for="fotos_recepcion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                <i class="fas fa-image mr-1"></i> Fotos de Recepción
-            </label>
-            <input type="file" id="fotos_recepcion" name="fotos_recepcion[]" accept="image/*" multiple class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded">
+            </div>
+            <button type="button" onclick="addMaterialRow()" class="bg-blue-500 text-white px-2 py-1 rounded mt-2">
+                + Agregar Material
+            </button>
         </div>
 
         <!-- Fila 3: Hora de Entrega y Recojo (Fecha y Hora) -->
@@ -180,184 +178,169 @@
     </form>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Función para asignar el legajo según el supervisor seleccionado
-        function asignarLegajo(selectElement) {
-            var legajo = selectElement.options[selectElement.selectedIndex].getAttribute('data-legajo');
-            document.getElementById('legajo').value = legajo || '';
-        }
-
-        // Inicialización del mapa con Leaflet
-        let map = L.map('mapa').setView([-16.2902, -63.5887], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        let marker = null;
-        function obtenerUbicacion() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude.toFixed(6);
-                        const lng = position.coords.longitude.toFixed(6);
-                        
-                        if (marker) map.removeLayer(marker);
-                        
-                        marker = L.marker([lat, lng]).addTo(map)
-                            .bindPopup("Ubicación seleccionada")
-                            .openPopup();
-                            
-                        map.setView([lat, lng], 16);
-                        document.getElementById('ubicacion').value = `${lat},${lng}`;
-                    },
-                    (error) => {
-                        alert("Error al obtener ubicación: " + error.message);
-                    }
-                );
-            } else {
-                alert("Tu navegador no soporta geolocalización.");
-            }
-        }
-
-        map.on('click', function(e) {
-            const lat = e.latlng.lat.toFixed(6);
-            const lng = e.latlng.lng.toFixed(6);
-            
-            if (marker) map.removeLayer(marker);
-            
-            marker = L.marker([lat, lng]).addTo(map)
-                .bindPopup("Ubicación seleccionada")
-                .openPopup();
-                
-            document.getElementById('ubicacion').value = `${lat},${lng}`;
-        });
-
-        window.onload = function() {
-            map.invalidateSize();
-        };
-
-        // SECCIÓN: Materiales Dinámicos
-        let materialOptions = ["vallas", "kiosko", "tarima", "plataformas", "sillas"];
-
-        function addMaterialRow() {
-            const container = document.getElementById('materialContainer');
-            const row = document.createElement('div');
-            row.className = "flex flex-wrap items-center gap-2 mb-2";
-
-            // Select para elegir el material
-            const select = document.createElement('select');
-            select.name = "material_item[]";
-            select.required = true;
-            select.className = "px-2 py-1 border rounded";
-            materialOptions.forEach(function(option) {
-                const opt = document.createElement('option');
-                opt.value = option;
-                opt.text = option.charAt(0).toUpperCase() + option.slice(1);
-                select.appendChild(opt);
-            });
-
-            // Input para cantidad
-            const quantity = document.createElement('input');
-            quantity.type = "number";
-            quantity.name = "material_quantity[]";
-            quantity.required = true;
-            quantity.placeholder = "Cantidad";
-            quantity.min = "1";
-            quantity.className = "px-2 py-1 border rounded w-24";
-
-            // Input para foto entregada
-            const photo = document.createElement('input');
-            photo.type = "file";
-            photo.name = "material_photo[]";
-            photo.accept = "image/*";
-            photo.required = true;
-            photo.className = "px-2 py-1 border rounded";
-
-            // Botón para eliminar la fila
-            const removeBtn = document.createElement('button');
-            removeBtn.type = "button";
-            removeBtn.innerText = "Eliminar";
-            removeBtn.className = "bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded";
-            removeBtn.onclick = function() {
-                container.removeChild(row);
-            };
-
-            row.appendChild(select);
-            row.appendChild(quantity);
-            row.appendChild(photo);
-            row.appendChild(removeBtn);
-
-            container.appendChild(row);
-        }
-
-        function addNewMaterial() {
-            const newMatInput = document.getElementById('nuevoMaterial');
-            const newMat = newMatInput.value.trim();
-            if(newMat && !materialOptions.includes(newMat.toLowerCase())){
-                materialOptions.push(newMat.toLowerCase());
-                updateMaterialSelectOptions();
-                newMatInput.value = '';
-            } else {
-                alert("Material ya existe o valor inválido");
-            }
-        }
-
-        function updateMaterialSelectOptions() {
-            const selects = document.querySelectorAll('select[name="material_item[]"]');
-            selects.forEach(function(select) {
-                const selectedValue = select.value;
-                select.innerHTML = "";
-                materialOptions.forEach(function(option) {
-                    const opt = document.createElement('option');
-                    opt.value = option;
-                    opt.text = option.charAt(0).toUpperCase() + option.slice(1);
-                    select.appendChild(opt);
-                });
-                if(materialOptions.includes(selectedValue)) {
-                    select.value = selectedValue;
-                }
-            });
-        }
-
-        // SECCIÓN: Operador Dinámico
-        let operatorOptions = ["CBN2", "Operador 2"];
-
-        function updateOperatorOptions() {
-            const operadorSelect = document.getElementById('operador');
-            operadorSelect.innerHTML = '<option value="">Selecciona un operador</option>';
-            operatorOptions.forEach(function(op) {
-                const opt = document.createElement('option');
-                opt.value = op;
-                opt.text = op;
-                operadorSelect.appendChild(opt);
-            });
-        }
-
-        function addNewOperator() {
-            const newOpInput = document.getElementById('nuevoOperador');
-            const newOp = newOpInput.value.trim();
-            if(newOp && !operatorOptions.includes(newOp)){
-                operatorOptions.push(newOp);
-                updateOperatorOptions();
-                newOpInput.value = '';
-            } else {
-                alert("Operador ya existe o valor inválido");
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            updateOperatorOptions();
-        });
-    </script>
 <script>
+    // Función para asignar el legajo según el supervisor seleccionado
+    function asignarLegajo(selectElement) {
+        const legajo = selectElement.options[selectElement.selectedIndex].getAttribute('data-legajo');
+        document.getElementById('legajo').value = legajo || '';
+    }
+
+    // Inicialización del mapa con Leaflet
+    let map = L.map('mapa').setView([-16.2902, -63.5887], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    let marker = null;
+    function obtenerUbicacion() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    
+                    if (marker) map.removeLayer(marker);
+                    
+                    marker = L.marker([lat, lng]).addTo(map)
+                        .bindPopup("Ubicación seleccionada")
+                        .openPopup();
+                        
+                    map.setView([lat, lng], 16);
+                    document.getElementById('ubicacion').value = `${lat},${lng}`;
+                },
+                (error) => {
+                    alert("Error al obtener ubicación: " + error.message);
+                }
+            );
+        } else {
+            alert("Tu navegador no soporta geolocalización.");
+        }
+    }
+
+    map.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        
+        if (marker) map.removeLayer(marker);
+        
+        marker = L.marker([lat, lng]).addTo(map)
+            .bindPopup("Ubicación seleccionada")
+            .openPopup();
+            
+        document.getElementById('ubicacion').value = `${lat},${lng}`;
+    });
+
+    window.onload = function() {
+        map.invalidateSize();
+    };
+
+    // SECCIÓN: Materiales Dinámicos
+    let materialRowIndex = 0;
+
+    function addMaterialRow() {
+        materialRowIndex++;
+        const newRow = `
+            <div class="flex gap-2 mb-2 items-center">
+                <select name="materiales[${materialRowIndex}][id]" class="material-selector" required>
+                    <option value="">Seleccionar</option>
+                    @foreach(App\Models\Material::all() as $material)
+                        <option value="{{ $material->id }}" data-stock="{{ $material->stock_total }}">
+                            {{ $material->nombre }} (Stock: {{ $material->stock_total }})
+                        </option>
+                    @endforeach
+                </select>
+                <input type="number" 
+                       name="materiales[${materialRowIndex}][cantidad]" 
+                       min="1" 
+                       placeholder="Cantidad" 
+                       required 
+                       class="px-2 py-1 border rounded w-24 dark:bg-gray-700 dark:border-gray-600">
+                <input type="file" 
+                       name="materiales[${materialRowIndex}][foto_entrega]" 
+                       accept="image/*" 
+                       required 
+                       class="px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600">
+                <button type="button" 
+                        onclick="removeMaterialRow(this)" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+                    X
+                </button>
+            </div>
+        `;
+        
+        const container = document.getElementById('materialContainer');
+        container.insertAdjacentHTML('beforeend', newRow);
+        
+        // Agregar validación de stock en tiempo real
+        const newSelect = container.lastElementChild.querySelector('select');
+        newSelect.addEventListener('change', function() {
+            const stock = parseInt(this.options[this.selectedIndex].dataset.stock);
+            const cantidadInput = this.closest('div').querySelector('input[type="number"]');
+            cantidadInput.setAttribute('max', stock);
+            cantidadInput.value = Math.min(parseInt(cantidadInput.value || 0), stock);
+        });
+    }
+
+    function removeMaterialRow(button) {
+        button.closest('div').remove();
+    }
+
+    // SECCIÓN: Operador Dinámico
+    let operatorOptions = ["CBN2", "Operador 2"];
+
+    function updateOperatorOptions() {
+        const operadorSelect = document.getElementById('operador');
+        operadorSelect.innerHTML = '<option value="">Selecciona un operador</option>';
+        operatorOptions.forEach(function(op) {
+            const opt = document.createElement('option');
+            opt.value = op;
+            opt.text = op;
+            operadorSelect.appendChild(opt);
+        });
+    }
+
+    function addNewOperator() {
+        const newOpInput = document.getElementById('nuevoOperador');
+        const newOp = newOpInput.value.trim();
+        if(newOp && !operatorOptions.includes(newOp)){
+            operatorOptions.push(newOp);
+            updateOperatorOptions();
+            newOpInput.value = '';
+        } else {
+            alert("Operador ya existe o valor inválido");
+        }
+    }
+
+    // Validación general del formulario
     function validarFormulario() {
         const ubicacion = document.getElementById('ubicacion').value;
-
         if (!ubicacion || ubicacion.trim() === '') {
             alert('Por favor, selecciona una ubicación en el mapa.');
-            return false; // Evita que el formulario se envíe
+            return false;
         }
-
-        return true; // Todo ok, se permite el envío
+        
+        // Validar que al menos haya un material
+        const materiales = document.querySelectorAll('[name^="materiales["]');
+        if (materiales.length === 0) {
+            alert('Debe agregar al menos un material');
+            return false;
+        }
+        
+        return true;
     }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', function() {
+        updateOperatorOptions();
+        
+        // Agregar evento a los selectores de material existentes
+        document.querySelectorAll('.material-selector').forEach(select => {
+            select.addEventListener('change', function() {
+                const stock = parseInt(this.options[this.selectedIndex].dataset.stock);
+                const cantidadInput = this.closest('div').querySelector('input[type="number"]');
+                cantidadInput.setAttribute('max', stock);
+            });
+        });
+    });
 </script>
+
 
 @endsection

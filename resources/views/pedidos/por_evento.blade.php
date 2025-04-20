@@ -38,14 +38,14 @@
 
   /* La imagen del usuario se coloca centrada dentro del "pin" */
   .custom-pin-container img {
-      width: 48px;       /* Ajusta el tamaño de la imagen */
-      height: 48px;
+      width: 20px;       /* Ajusta el tamaño de la imagen */
+      height: 20px;
       object-fit: cover;
       border-radius: 50%; /* O elimina el border-radius si deseas conservar la forma original de la imagen */
   }
 </style>
 
-<h2 class="text-2xl font-bold mb-4">Pedidos del Evanto: {{ $evento->nombre }}</h2>
+<h2 class="text-2xl font-bold mb-4">Pedidos del Evento: {{ $evento->nombre }}</h2>
 <p class="mb-2">Total de pedidos para este evento: <strong>{{ $pedidos->count() }}</strong></p>
 
 @if ($pedidos->isEmpty())
@@ -361,8 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>`,
                     className: 'custom-pin', // clase para aplicar los estilos (la hoja de estilo la definimos arriba)
                     iconSize: [50, 50],      // debe coincidir con el ancho/alto del contenedor
-                    iconAnchor: [25, 50],    // el "punto punta" del pin (centro inferior)
-                    popupAnchor: [0, -50]    // para que el popup se muestre por encima
+                    iconAnchor: [25, 25],    // el "punto punta" del pin (centro inferior)
+                    popupAnchor: [0, 0]    // para que el popup se muestre por encima
                 });
             } else {
                 // Si no hay foto, usar icono predeterminado (o el que ya tienes)

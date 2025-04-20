@@ -8,6 +8,7 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\InventarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -159,3 +160,13 @@ Route::middleware(['auth:empleado'])->group(function () {
     Route::put('/pedidos/{pedido}/status', [PedidoController::class, 'updateStatus'])->name('pedidos.updateStatus');
     Route::post('/pedidos/{pedido}/evidence', [PedidoController::class, 'updateEvidence'])->name('pedidos.updateEvidence');
 });  
+// Usar los mismos middlewares que en HomeController
+Route::middleware(['auth:externo,empleado'])->group(function () {
+    Route::prefix('inventario')->group(function () {
+        Route::get('/', [InventarioController::class, 'index'])->name('inventario.index');
+        Route::get('/descargar-plantilla', [InventarioController::class, 'downloadTemplate'])
+             ->name('inventario.download-template');
+        Route::post('/subir', [InventarioController::class, 'upload'])
+             ->name('inventario.upload');
+    });
+});

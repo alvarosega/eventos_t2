@@ -53,6 +53,11 @@
                             <i class="fas fa-plus mr-1"></i> Nuevo Evento
                         </a>
                     @endif
+                    @if($usuario && $usuario->rol === 'master')
+                        <a href="{{ route('inventario.index') }}" class="btn-primary">
+                            <i class="fas fa-boxes mr-1"></i> Gestionar Inventario
+                        </a>
+                    @endif
                 </div>
             </div>
 
