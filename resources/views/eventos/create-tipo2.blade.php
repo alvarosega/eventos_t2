@@ -2,182 +2,324 @@
 
 @section('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        .form-section {
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .dark .form-section {
+            background-color: #1f2937;
+            border-color: #374151;
+        }
+        .input-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .dark .input-label {
+            color: #d1d5db;
+        }
+        .input-field {
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        .material-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        @media (max-width: 768px) {
+            .material-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 @endsection
 
 @section('title', 'Crear Evento Tipo 2')
 
 @section('content')
-    <h2 class="text-2xl font-bold mb-4 flex items-center">
-        <i class="fas fa-truck-moving text-green-500 mr-2"></i>
-        Crear Evento Tipo 2
-    </h2>
+<div class="container mx-auto px-4 py-8">
+    <!-- Encabezado mejorado -->
+    <div class="flex items-start mb-8">
+        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-full mr-4 mt-1">
+            <i class="fas fa-truck-moving text-green-600 dark:text-green-300 text-xl"></i>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+                Crear Evento Tipo 2
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                Complete todos los campos requeridos para registrar un nuevo evento de transporte
+            </p>
+        </div>
+    </div>
 
-    <form id="formularioEvento" onsubmit="return validarFormulario()" action="{{ route('eventos.store-tipo2') }}" method="POST" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 p-4 rounded shadow-lg transition-all duration-300 max-w-4xl">
+    <!-- Formulario principal -->
+    <form id="formularioEvento" onsubmit="return validarFormulario()" action="{{ route('eventos.store-tipo2') }}" method="POST" enctype="multipart/form-data" 
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
         @csrf
 
-        <!-- Fila 1: Fecha y Nombre del Evento -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label for="fecha" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-calendar-day mr-1"></i> Fecha del Evento
-                </label>
-                <input type="date" id="fecha" name="fecha" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-            </div>
-            <div>
-                <label for="evento" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-signature mr-1"></i> Nombre del Evento
-                </label>
-                <input type="text" id="evento" name="evento" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-            </div>
-        </div>
-
-        <!-- Fila 2: Encargado y Celular -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label for="encargado" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-user-tie mr-1"></i> Encargado
-                </label>
-                <input type="text" id="encargado" name="encargado" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-            </div>
-            <div>
-                <label for="celular" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-mobile-alt mr-1"></i> Celular
-                </label>
-                <input type="text" id="celular" name="celular" required pattern="\d{8}" title="Debe contener 8 dígitos" class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
+        <!-- Sección 1: Información básica -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-info-circle text-green-500 mr-2"></i>
+                Información Básica
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Fecha del Evento -->
+                <div>
+                    <label for="fecha" class="input-label">
+                        <i class="fas fa-calendar-day text-green-500 mr-2"></i> Fecha del Evento
+                    </label>
+                    <input type="date" id="fecha" name="fecha" required 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                </div>
+                
+                <!-- Nombre del Evento -->
+                <div>
+                    <label for="evento" class="input-label">
+                        <i class="fas fa-signature text-green-500 mr-2"></i> Nombre del Evento
+                    </label>
+                    <input type="text" id="evento" name="evento" required 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" 
+                           placeholder="Ej: Transporte de materiales a obra">
+                </div>
             </div>
         </div>
 
-        <!-- Dirección -->
-        <div class="mb-4">
-            <label for="direccion" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                <i class="fas fa-map-marker-alt mr-1"></i> Dirección
-            </label>
-            <input type="text" id="direccion" name="direccion" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
+        <!-- Sección 2: Responsables -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-users text-green-500 mr-2"></i>
+                Responsables
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Encargado -->
+                <div>
+                    <label for="encargado" class="input-label">
+                        <i class="fas fa-user-tie text-green-500 mr-2"></i> Encargado
+                    </label>
+                    <input type="text" id="encargado" name="encargado" required 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" 
+                           placeholder="Nombre completo del encargado">
+                </div>
+                
+                <!-- Celular -->
+                <div>
+                    <label for="celular" class="input-label">
+                        <i class="fas fa-mobile-alt text-green-500 mr-2"></i> Celular
+                    </label>
+                    <input type="text" id="celular" name="celular" required pattern="\d{8}" title="Debe contener 8 dígitos" 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" 
+                           placeholder="8 dígitos">
+                </div>
+            </div>
+            
+            <!-- Dirección -->
+            <div class="mt-4">
+                <label for="direccion" class="input-label">
+                    <i class="fas fa-map-marker-alt text-green-500 mr-2"></i> Dirección
+                </label>
+                <input type="text" id="direccion" name="direccion" required 
+                       class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" 
+                       placeholder="Dirección exacta del evento">
+            </div>
         </div>
 
-        <!-- Materiales Dinámicos -->
-        <div class="mb-4">
-            <label class="block mb-1 font-semibold">
-                <i class="fas fa-boxes"></i> Materiales
-            </label>
+        <!-- Sección 3: Materiales -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-boxes text-green-500 mr-2"></i>
+                Materiales
+            </h3>
+            
             <div id="materialContainer">
-                <div class="flex gap-2 mb-2">
-                    <select name="materiales[0][id]" class="material-selector" required>
-                        <option value="">Seleccionar</option>
+                <div class="material-row">
+                    <select name="materiales[0][id]" class="material-selector input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" required>
+                        <option value="">Seleccionar material</option>
                         @foreach(App\Models\Material::all() as $material)
                             <option value="{{ $material->id }}" data-stock="{{ $material->stock_total }}">
                                 {{ $material->nombre }} (Stock: {{ $material->stock_total }})
                             </option>
                         @endforeach
                     </select>
-                    <input type="number" name="materiales[0][cantidad]" min="1" placeholder="Cantidad" required>
-                    <input type="file" name="materiales[0][foto_entrega]" accept="image/*" required>
-                    <button type="button" onclick="removeMaterialRow(this)" class="bg-red-500 text-white px-2 rounded">X</button>
+                    
+                    <input type="number" name="materiales[0][cantidad]" min="1" placeholder="Cantidad" required 
+                           class="input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                    
+                    <input type="file" name="materiales[0][foto_entrega]" accept="image/*" required 
+                           class="input-field file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-green-900 dark:file:text-green-200">
+                    
+                    <button type="button" onclick="removeMaterialRow(this)" 
+                            class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors duration-200">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
-            <button type="button" onclick="addMaterialRow()" class="bg-blue-500 text-white px-2 py-1 rounded mt-2">
-                + Agregar Material
+            
+            <button type="button" onclick="addMaterialRow()" 
+                    class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 inline-flex items-center">
+                <i class="fas fa-plus mr-2"></i> Agregar Material
             </button>
         </div>
 
-        <!-- Fila 3: Hora de Entrega y Recojo (Fecha y Hora) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label for="hor_entrega" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-clock mr-1"></i> Hora de Entrega
-                </label>
-                <input type="time" id="hor_entrega" name="hor_entrega" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-            </div>
-            <div>
-                <label for="recojo" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-truck-loading mr-1"></i> Recojo (Fecha y Hora)
-                </label>
-                <input type="datetime-local" id="recojo" name="recojo" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
+        <!-- Sección 4: Horarios -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-clock text-green-500 mr-2"></i>
+                Horarios
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Hora de Entrega -->
+                <div>
+                    <label for="hor_entrega" class="input-label">
+                        <i class="fas fa-truck-loading text-green-500 mr-2"></i> Hora de Entrega
+                    </label>
+                    <input type="time" id="hor_entrega" name="hor_entrega" required 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                </div>
+                
+                <!-- Recojo -->
+                <div>
+                    <label for="recojo" class="input-label">
+                        <i class="fas fa-truck text-green-500 mr-2"></i> Recojo (Fecha y Hora)
+                    </label>
+                    <input type="datetime-local" id="recojo" name="recojo" required 
+                           class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                </div>
             </div>
         </div>
 
-        <!-- Fila 4: Operador y Supervisor / Legajo -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label for="operador" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-hard-hat mr-1"></i> Operador
-                </label>
-                <select id="operador" name="operador" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-                    <!-- Las opciones se cargarán vía JavaScript -->
-                </select>
-                @if($usuario->rol === 'master')
-                    <div class="mt-2">
-                        <input type="text" id="nuevoOperador" placeholder="Nuevo Operador" class="px-2 py-1 border rounded">
-                        <button type="button" onclick="addNewOperator()" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
-                            Agregar Operador
-                        </button>
-                    </div>
-                @endif
-            </div>
-
-            <div>
-                <label for="supervisor" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                    <i class="fas fa-user-shield mr-1"></i> Supervisor
-                </label>
-
-                @php $usuario = Auth::user(); @endphp
-
-                @if($usuario->rol === 'master' && isset($empleados))
-                    <select id="supervisor" name="supervisor" required onchange="asignarLegajo(this)"
-                            class="w-full mb-2 px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-                        <option value="">Selecciona Supervisor</option>
-                        @foreach($empleados as $empleado)
-                            <option value="{{ $empleado->nombre_completo }}" data-legajo="{{ $empleado->legajo }}">
-                                {{ $empleado->nombre_completo }}
-                            </option>
-                        @endforeach
+        <!-- Sección 5: Personal -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-user-shield text-green-500 mr-2"></i>
+                Personal Asignado
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Operador -->
+                <div>
+                    <label for="operador" class="input-label">
+                        <i class="fas fa-hard-hat text-green-500 mr-2"></i> Operador
+                    </label>
+                    <select id="operador" name="operador" required 
+                            class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                        <!-- Las opciones se cargarán vía JavaScript -->
                     </select>
-
-                    <label for="legajo" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">Legajo</label>
-                    <input type="text" id="legajo" name="legajo" readonly class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-400 rounded text-gray-700 dark:text-gray-100">
-                @else
-                    <input type="text" id="supervisor" name="supervisor" value="{{ $usuario->nombre_completo }}" readonly class="w-full mb-2 px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-400 rounded text-gray-700 dark:text-gray-100">
-
-                    <label for="legajo" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">Legajo</label>
-                    <input type="text" id="legajo" name="legajo" value="{{ $usuario->legajo }}" readonly class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-400 rounded text-gray-700 dark:text-gray-100">
-                @endif
+                    
+                    @if($usuario->rol === 'master')
+                        <div class="mt-3 flex gap-2">
+                            <input type="text" id="nuevoOperador" placeholder="Nuevo Operador" 
+                                   class="flex-1 input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                            <button type="button" onclick="addNewOperator()" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                                Agregar
+                            </button>
+                        </div>
+                    @endif
+                </div>
+                
+                <!-- Supervisor -->
+                <div>
+                    <label for="supervisor" class="input-label">
+                        <i class="fas fa-user-shield text-green-500 mr-2"></i> Supervisor
+                    </label>
+                    
+                    @php $usuario = Auth::user(); @endphp
+                    
+                    @if($usuario->rol === 'master' && isset($empleados))
+                        <select id="supervisor" name="supervisor" required onchange="asignarLegajo(this)"
+                                class="w-full mb-3 input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                            <option value="">Selecciona Supervisor</option>
+                            @foreach($empleados as $empleado)
+                                <option value="{{ $empleado->nombre_completo }}" data-legajo="{{ $empleado->legajo }}">
+                                    {{ $empleado->nombre_completo }}
+                                </option>
+                            @endforeach
+                        </select>
+                        
+                        <label for="legajo" class="input-label">Legajo</label>
+                        <input type="text" id="legajo" name="legajo" readonly 
+                               class="w-full input-field px-4 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-100">
+                    @else
+                        <input type="text" id="supervisor" name="supervisor" value="{{ $usuario->nombre_completo }}" readonly 
+                               class="w-full mb-3 input-field px-4 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-100">
+                        
+                        <label for="legajo" class="input-label">Legajo</label>
+                        <input type="text" id="legajo" name="legajo" value="{{ $usuario->legajo }}" readonly 
+                               class="w-full input-field px-4 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-100">
+                    @endif
+                </div>
             </div>
         </div>
 
-        <!-- Estado del Evento -->
-        <div class="mb-4">
-            <label for="estado_evento" class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                <i class="fas fa-info-circle mr-1"></i> Estado del Evento
-            </label>
-            <select id="estado_evento" name="estado_evento" required class="w-full px-3 py-2 border border-secondary dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-gray-100">
-                <option value="pendiente">Pendiente</option>
-                <option value="aprobado">Aprobado</option>
-                <option value="cancelado">Cancelado</option>
-                <option value="rechazado">Rechazado</option>
-            </select>
+        <!-- Sección 6: Estado y Ubicación -->
+        <div class="form-section dark:bg-gray-800">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-map-marked-alt text-green-500 mr-2"></i>
+                Estado y Ubicación
+            </h3>
+            
+            <!-- Estado del Evento -->
+            <div class="mb-6">
+                <label for="estado_evento" class="input-label">
+                    <i class="fas fa-info-circle text-green-500 mr-2"></i> Estado del Evento
+                </label>
+                <select id="estado_evento" name="estado_evento" required 
+                        class="w-full input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="aprobado">Aprobado</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="rechazado">Rechazado</option>
+                </select>
+            </div>
+            
+            <!-- Mapa -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <label class="input-label">
+                        <i class="fas fa-map-marker-alt text-green-500 mr-2"></i> Ubicación Geográfica
+                    </label>
+                    <button type="button" onclick="obtenerUbicacion()"
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 inline-flex items-center">
+                        <i class="fas fa-location-arrow mr-2"></i> Usar mi ubicación
+                    </button>
+                </div>
+                <input type="hidden" id="ubicacion" name="ubicacion">
+                <div id="mapa" class="w-full h-96 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-inner"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Haz clic en el mapa para seleccionar la ubicación o usa el botón para obtener tu ubicación actual
+                </p>
+            </div>
         </div>
 
-        <!-- Mapa y Ubicación -->
-        <div class="mb-4">
-            <label class="block mb-1 font-semibold text-sm text-secondary dark:text-gray-200">
-                <i class="fas fa-map-marked-alt mr-1"></i> Ubicación Geográfica
-            </label>
-            <input type="hidden" id="ubicacion" name="ubicacion">
-            <button type="button" onclick="obtenerUbicacion()"
-                    class="inline-block bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600 transition mb-4">
-                <i class="fas fa-location-arrow mr-1"></i> Usar mi ubicación actual
+        <!-- Botón de envío -->
+        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600 text-right">
+            <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-200 inline-flex items-center transform hover:scale-[1.02]">
+                <i class="fas fa-check-circle mr-2"></i> Crear Evento Tipo 2
             </button>
-            <div id="mapa" class="w-full h-96 border border-gray-300 dark:border-gray-600 rounded overflow-hidden"></div>
         </div>
-
-        <!-- Botón Crear Evento -->
-        <button type="submit"
-                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow focus:outline-none focus:ring-2 focus:ring-green-500 transition">
-            <i class="fas fa-check mr-1"></i> Crear Evento Tipo 2
-        </button>
     </form>
+</div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Scripts (Mantenidos exactamente igual) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     // Función para asignar el legajo según el supervisor seleccionado
     function asignarLegajo(selectElement) {
@@ -238,30 +380,33 @@
     function addMaterialRow() {
         materialRowIndex++;
         const newRow = `
-            <div class="flex gap-2 mb-2 items-center">
-                <select name="materiales[${materialRowIndex}][id]" class="material-selector" required>
-                    <option value="">Seleccionar</option>
+            <div class="material-row">
+                <select name="materiales[${materialRowIndex}][id]" class="material-selector input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100" required>
+                    <option value="">Seleccionar material</option>
                     @foreach(App\Models\Material::all() as $material)
                         <option value="{{ $material->id }}" data-stock="{{ $material->stock_total }}">
                             {{ $material->nombre }} (Stock: {{ $material->stock_total }})
                         </option>
                     @endforeach
                 </select>
+                
                 <input type="number" 
                        name="materiales[${materialRowIndex}][cantidad]" 
                        min="1" 
                        placeholder="Cantidad" 
                        required 
-                       class="px-2 py-1 border rounded w-24 dark:bg-gray-700 dark:border-gray-600">
+                       class="input-field px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100">
+                
                 <input type="file" 
                        name="materiales[${materialRowIndex}][foto_entrega]" 
                        accept="image/*" 
                        required 
-                       class="px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600">
+                       class="input-field file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-green-900 dark:file:text-green-200">
+                
                 <button type="button" 
                         onclick="removeMaterialRow(this)" 
-                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-                    X
+                        class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors duration-200">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
         `;
@@ -341,6 +486,4 @@
         });
     });
 </script>
-
-
 @endsection
